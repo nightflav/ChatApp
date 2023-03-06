@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="EmojiView">
+        <attr name="emoji" format="string" />
+        <attr name="count" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="ReactionsViewGroup">
+        <attr name="spaceBetween" format="integer"/>
+        <attr name="spaceBefore" format="integer"/>
+        <attr name="spaceAfter" format="integer"/>
+        <attr name="maxSpace" format="dimension"/>
+    </declare-styleable>
+</resources>
