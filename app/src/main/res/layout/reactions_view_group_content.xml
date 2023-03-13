@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
         android:id="@+id/addButton"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="45dp"
+        android:layout_height="30dp"
         android:background="@drawable/bg_emoji_reaction_view_default"
-        android:scaleType="centerCrop"
-        android:src="@drawable/add_48px"
         android:importantForAccessibility="no"
-        />
+        android:src="@drawable/ic_add"
+        app:tint="@color/white_text" />
 
 </merge>

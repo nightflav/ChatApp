@@ -1,14 +1,18 @@
-package com.example.homework_2
+package com.example.homework_2.views
 
 import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginRight
 import androidx.core.view.marginTop
+import com.example.homework_2.R
+import com.example.homework_2.dp
 
 class MessageViewGroup
 @JvmOverloads constructor(
@@ -22,67 +26,66 @@ class MessageViewGroup
     defStyleAttr,
     defStyleRes
 ) {
-    private val image: ImageView
-    private val message: TextView
-    private val name: TextView
-    private val reactions: ReactionsViewGroup
+    val image: ImageView by lazy { findViewById(R.id.profile_image) }
+    val message: TextView by lazy { findViewById(R.id.message_text) }
+    val name: TextView by lazy { findViewById(R.id.sender_name) }
+    private val linearLayout: LinearLayout by lazy { findViewById(R.id.msg_vg_text) }
+    val reactions: ReactionsViewGroup by lazy { findViewById(R.id.reactions) }
     private val paddingHorizontal = paddingLeft + paddingRight
     private val paddingVertical = paddingTop + paddingBottom
 
     init {
         inflate(context, R.layout.message_view_group_content, this)
 
-        image = findViewById(R.id.image)
-        message = findViewById(R.id.message)
-        name = findViewById(R.id.name)
-        reactions = findViewById(R.id.reactions)
+        name.setTextColor(resources.getColor(R.color.secondary_color, this.context.theme))
+        linearLayout.background =
+            AppCompatResources.getDrawable(this.context, R.drawable.bg_received_message)
+
+        linearLayout.setPadding(
+            12f.dp(context).toInt(),
+            8f.dp(context).toInt(),
+            12f.dp(context).toInt(),
+            8f.dp(context).toInt()
+        )
+
+        reactions.setPadding(
+            0f.dp(context).toInt(),
+            4f.dp(context).toInt(),
+            0f.dp(context).toInt(),
+            4f.dp(context).toInt()
+        )
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        measureChildWithMargins(image, widthMeasureSpec, 0, heightMeasureSpec, 0)
-        measureChildWithMargins(
-            message,
-            widthMeasureSpec,
-            image.measuredWidth + image.marginRight + image.marginLeft,
-            heightMeasureSpec,
-            image.measuredHeight + image.marginTop + image.marginBottom
-        )
-        measureChildWithMargins(
-            name,
-            widthMeasureSpec,
-            image.measuredWidth + image.marginRight + image.marginLeft,
-            heightMeasureSpec,
-            image.measuredHeight + image.marginTop + image.marginBottom +
-                    message.measuredHeight + message.marginTop + message.marginBottom
-        )
 
-        reactions.setMaxSpace(message.measuredWidth)
+        measureChildren(widthMeasureSpec, heightMeasureSpec)
+
+        reactions.setMaxSpace(277f.dp(context).toInt())
         measureChildWithMargins(
             reactions,
             widthMeasureSpec,
             image.measuredWidth + image.marginRight + image.marginLeft,
             heightMeasureSpec,
-            image.measuredHeight + image.marginTop + image.marginBottom +
-                    message.measuredHeight + message.marginTop + message.marginBottom +
+            linearLayout.measuredHeight +
                     name.measuredHeight + name.marginTop + name.marginBottom
         )
 
         val totalWidth =
-            paddingHorizontal + image.measuredWidth + message.measuredWidth +
-                    image.marginLeft + image.marginRight +
-                    message.marginLeft + message.marginRight +
-                    name.marginLeft + name.marginRight +
-                    reactions.marginLeft + reactions.marginRight
+            paddingHorizontal + image.measuredWidth + maxOf(
+                reactions.measuredWidth + reactions.paddingStart + reactions.paddingEnd,
+                linearLayout.measuredWidth + linearLayout.paddingEnd + linearLayout.paddingStart
+            )
 
         val totalHeight =
             paddingVertical + maxOf(
                 image.measuredHeight,
-                message.measuredHeight + name.measuredHeight + reactions.measuredHeight
+                linearLayout.measuredHeight + reactions.measuredHeight
             )
         setMeasuredDimension(totalWidth, totalHeight)
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+
         var offsetX = paddingLeft + image.marginLeft
         var offsetY = paddingTop
         image.layout(
@@ -91,23 +94,16 @@ class MessageViewGroup
             offsetX + image.measuredWidth,
             offsetY + image.measuredHeight + image.marginTop
         )
-        offsetX += image.measuredWidth + image.marginRight + message.marginLeft
+        offsetX += image.measuredWidth + image.marginRight + message.marginLeft + 8f.dp(context)
+            .toInt()
 
-        name.layout(
+        linearLayout.layout(
             offsetX,
-            offsetY + name.marginTop,
-            offsetX + name.measuredWidth,
-            offsetY + name.marginTop + name.measuredHeight
+            offsetY + linearLayout.marginTop,
+            offsetX + linearLayout.measuredWidth,
+            offsetY + linearLayout.marginTop + linearLayout.measuredHeight
         )
-        offsetY += name.measuredHeight + name.marginTop + name.marginBottom
-
-        message.layout(
-            offsetX,
-            offsetY + message.marginTop,
-            offsetX + message.measuredWidth,
-            offsetY + message.marginTop + message.measuredHeight
-        )
-        offsetY += message.measuredHeight + message.marginTop + message.marginBottom
+        offsetY += linearLayout.measuredHeight + linearLayout.marginTop + linearLayout.marginBottom
 
         reactions.layout(
             offsetX,
@@ -116,8 +112,6 @@ class MessageViewGroup
             offsetY + reactions.measuredHeight + reactions.marginTop
         )
     }
-
-
 
     override fun generateDefaultLayoutParams(): LayoutParams {
         return MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)

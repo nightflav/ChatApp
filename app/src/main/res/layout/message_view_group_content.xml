@@ -1,30 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <ImageView
-        android:id="@+id/image"
+        android:id="@+id/profile_image"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:importantForAccessibility="no"
         android:src="@mipmap/ic_launcher" />
 
-    <TextView
-        android:id="@+id/message"
+    <LinearLayout
+        android:id="@+id/msg_vg_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxWidth="350dp"
-        android:text="Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. " />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:maxWidth="350dp"
-        android:maxLines="1"
-        android:text="Тестовое имя пользователя" />
+        <TextView
+            android:id="@+id/sender_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxWidth="350dp"
+            android:maxLines="1"
+            tools:text="Тестовое имя пользователя" />
+        <TextView
+            android:id="@+id/message_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="350dp"
+            tools:text="Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. Длинный текст. " />
 
-    <com.example.homework_2.ReactionsViewGroup
+
+    </LinearLayout>
+
+    <com.example.homework_2.views.ReactionsViewGroup
         android:id="@+id/reactions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

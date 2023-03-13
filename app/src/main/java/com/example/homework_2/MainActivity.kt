@@ -1,16 +1,29 @@
 package com.example.homework_2
 
 import android.os.Bundle
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageView
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.widget.doOnTextChanged
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.homework_2.databinding.ActivityMainBinding
-import kotlin.random.Random
+import com.example.homework_2.models.Reaction
+import com.example.homework_2.models.SingleMessage
+import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val msgAdapter by lazy {
+        MessageAdapter(
+            getReaction = { msgId -> getReaction(msgId) },
+            this
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -18,72 +31,81 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        supportActionBar?.hide()
 
-        binding.messageVg.setOnLongClickListener {
-            showFirstReaction(it)
+        binding.rvChat.adapter = msgAdapter
+        val rvLayoutManager = LinearLayoutManager(this)
+        rvLayoutManager.generateDefaultLayoutParams()
+        binding.rvChat.layoutManager = rvLayoutManager
+        (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+
+        setSendButtonChange()
+        setSendButtonOnClickListener(msgAdapter)
+    }
+
+    private fun setMessageOnClickListener(
+        msgAdapter: MessageAdapter,
+        reaction: Reaction,
+        msgId: String
+    ) {
+        Datasource.addReaction(reaction, msgId)
+        Log.d("mmytag", "${Datasource.getReactions(msgId)}")
+        msgAdapter.notifyItemChanged(Datasource.getMessages().map { it.message_id }.indexOf(msgId))
+//        binding.rvChat.visibility = View.GONE
+//        binding.rvChat.visibility = View.VISIBLE
+    }
+
+    private fun getReaction(msgId: String) {
+        val dialogLayout =
+            layoutInflater.inflate(R.layout.bsd_select_emoji_layout, LinearLayoutCompat(this))
+        val dialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        val rvEmojis = dialogLayout.findViewById<RecyclerView>(R.id.rv_emoji_bsd)
+        val emojiAdapter = EmojiAdapter(Datasource.getEmojis()) {
+            setMessageOnClickListener(
+                msgAdapter = msgAdapter,
+                reaction = Reaction(Datasource.emojiSetNCS[Datasource.getEmojis().indexOf(it)], 1, true),
+                msgId = msgId
+            )
+            dialog.cancel()
         }
+        dialog.setContentView(dialogLayout)
+        rvEmojis.layoutManager = GridLayoutManager(this, 7)
+        rvEmojis.adapter = emojiAdapter
+        dialog.behavior.maxHeight = 700f.dp(this).toInt()
+        dialog.show()
+    }
 
-        binding.messageVg.findViewById<ImageView>(R.id.addButton).setOnClickListener {
-            addReaction(it)
+    private fun setSendButtonOnClickListener(adapter: MessageAdapter) {
+        binding.btnSend.setOnClickListener {
+            if (binding.etMessage.text?.isNotEmpty() == true) {
+                val newMsg = SingleMessage(
+                    msg = binding.etMessage.text.toString(),
+                    reactions = mutableListOf(),
+                    user_id = "user_1",
+                    senderName = "Yaroslav",
+                    message_id = Datasource.getMessages().size.toString() + 1
+                )
+                Datasource.addMessage(newMsg)
+                binding.etMessage.text!!.clear()
+                adapter.notifyItemInserted(Datasource.getMessages().size)
+                binding.rvChat.scrollToPosition(Datasource.getMessages().lastIndex)
+            }
         }
     }
 
-    private fun getRandomEmoji(): String {
-        return when (Random.nextInt() % 4) {
-            0 -> Emojis.Smiley.unicode
-            1 -> Emojis.Sad.unicode
-            2 -> Emojis.Poker.unicode
-            else -> Emojis.Fire.unicode
-        }
-    }
-
-    private enum class Emojis(val unicode: String) {
-        Smiley("\uD83D\uDE00"),
-        Sad("\uD83D\uDE25"),
-        Poker("\uD83D\uDE10"),
-        Fire("\uD83D\uDD25")
-    }
-
-    private fun showFirstReaction(view: View): Boolean {
-        view as ViewGroup
-        return if (view.findViewById<ReactionsViewGroup>(R.id.reactions).childCount <= 1) {
-            val reactions = view.findViewById<ReactionsViewGroup>(R.id.reactions)
-            val emoji = EmojiView(this)
-            with(emoji) {
-                setEmoji("\uD83D\uDE01")
-                setEmojiBackground()
-                id = 0
-                setOnClickListener {
-                    isSelected = !isSelected
-                    if (isSelected)
-                        increaseCount()
-                    else
-                        decreaseCount()
+    private fun setSendButtonChange() {
+        binding.etMessage.doOnTextChanged { text, _, _, _ ->
+            if (text != null) {
+                if (text.isEmpty()) {
+                    binding.btnSend.setImageDrawable(
+                        AppCompatResources.getDrawable(this@MainActivity, R.drawable.ic_add)
+                    )
+                } else {
+                    binding.btnSend.setImageDrawable(
+                        AppCompatResources.getDrawable(this@MainActivity, R.drawable.ic_send)
+                    )
                 }
             }
-            reactions.addView(emoji)
-            view.invalidate()
-            true
-        } else
-            true
-    }
-
-    private fun addReaction(view: View) {
-        val reactions = binding.messageVg.findViewById<ReactionsViewGroup>(R.id.reactions)
-        val emoji = EmojiView(this)
-        with(emoji) {
-            setEmoji(getRandomEmoji())
-            setEmojiBackground()
-            id = 0
-            setOnClickListener {
-                isSelected = !isSelected
-                if (isSelected)
-                    increaseCount()
-                else
-                    decreaseCount()
-            }
         }
-        reactions.addView(emoji)
-        view.invalidate()
     }
 }

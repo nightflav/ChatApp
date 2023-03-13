@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rv_sent_message"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="end"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingHorizontal="8dp">
+
+    <TextView
+        android:id="@+id/tv_sent_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_sent_message"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp"
+        tools:text="Test message"
+        android:textColor="@color/white_text" />
+
+    <com.example.homework_2.views.ReactionsViewGroup
+        android:id="@+id/react_sent_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:maxSpace="277dp" />
+
+</LinearLayout>

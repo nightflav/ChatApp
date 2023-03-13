@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="bg_emoji_reaction_view_default">#3313131a</color>
-    <color name="bg_emoji_reaction_view_selected">#33240866</color>
-    <color name="bg_emoji_reaction_view_selected_stroke">#663600b3</color>
+    <color name="primary_color">#121212</color>
+    <color name="secondary_color">#2A9D8F</color>
+    <color name="secondary_variant">#006153</color>
+    <color name="white_text">#FAFAFA</color>
+    <color name="gray_text">#919191</color>
+    <color name="light_gray_text">#BCBCBC</color>
+    <color name="light_light_gray_text">#CCCCCC</color>
+    <color name="online_status">#4AB54D</color>
+    <color name="primary_variant">#1E1E1E</color>
+    <color name="light_light_dark">#282828</color>
+    <color name="topic_background">#1C1C1C</color>
+    <color name="bsd_image_view">#555555</color>
+    <color name="bg_data_separator">#070707</color>
+    <color name="data_separator_text">#999999</color>
+    <color name="bg_emoji_reaction_view_default">#1C1C1C</color>
+    <color name="bg_emoji_reaction_view_selected">#3A3A3A</color>
+    <color name="bg_emoji_reaction_view_selected_stroke">#4A4A4A</color>
+    <color name="transparent">#00000000</color>
 </resources>

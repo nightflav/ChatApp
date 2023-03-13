@@ -1,12 +1,13 @@
-package com.example.homework_2
+package com.example.homework_2.views
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.withStyledAttributes
 import androidx.core.view.children
+import com.example.homework_2.R
+import com.example.homework_2.px
 
 class ReactionsViewGroup @JvmOverloads constructor(
     context: Context,
@@ -21,7 +22,6 @@ class ReactionsViewGroup @JvmOverloads constructor(
     private var spaceBetween = 24
     private var maxWidth = context.resources.displayMetrics.widthPixels
     private lateinit var childViews: MutableList<View>
-
     init {
         context.withStyledAttributes(attrs, R.styleable.ReactionsViewGroup) {
             spaceBetween = this.getInt(R.styleable.ReactionsViewGroup_spaceBetween, spaceBetween)
@@ -122,12 +122,6 @@ class ReactionsViewGroup @JvmOverloads constructor(
             y + child.measuredHeight
         )
     }
-
-    private fun Float.px(context: Context) = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_PX,
-        this,
-        context.resources.displayMetrics
-    )
 
     fun setMaxSpace(size: Int) {
         maxWidth = size
