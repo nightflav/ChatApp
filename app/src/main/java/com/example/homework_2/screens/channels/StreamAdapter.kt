@@ -26,8 +26,6 @@ class StreamAdapter(
         private const val CHANNEL_VIEW_TYPE = 1
     }
 
-
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             TOPIC_VIEW_TYPE -> TopicViewHolder(
@@ -100,7 +98,10 @@ class StreamAdapter(
             itemView.setOnClickListener {
                 if(Datasource.containsTopic(topic.id)) {
                     val action =
-                        ChannelsFragmentDirections.actionChannelsFragmentToMessagesFragment(topicId = topic.id)
+                        ChannelsFragmentDirections.actionChannelsFragmentToMessagesFragment(
+                            topicId = topic.id,
+                            streamId = topic.parentId
+                        )
                     navController.navigate(action)
                 }
             }

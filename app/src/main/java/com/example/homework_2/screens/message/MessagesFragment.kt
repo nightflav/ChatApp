@@ -9,13 +9,17 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
-import com.example.homework_2.*
+import com.example.homework_2.Datasource
+import com.example.homework_2.R
 import com.example.homework_2.databinding.FragmentMessagesBinding
+import com.example.homework_2.dp
+import com.example.homework_2.emojiSetNCS
 import com.example.homework_2.models.Reaction
 import com.example.homework_2.models.SingleMessage
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -25,6 +29,9 @@ class MessagesFragment : Fragment() {
     private val args: MessagesFragmentArgs by navArgs()
     private val topicId by lazy {
         args.topicId
+    }
+    private val streamId by lazy {
+        args.streamId
     }
 
     private lateinit var msgAdapter: MessageAdapter
@@ -44,20 +51,34 @@ class MessagesFragment : Fragment() {
             context,
             topicId
         )
-        binding.rvChat.adapter = msgAdapter
-        val rvLayoutManager = LinearLayoutManager(requireContext())
-        rvLayoutManager.generateDefaultLayoutParams()
-        binding.rvChat.layoutManager = rvLayoutManager
-        (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+        setupToolbar()
+        initRecyclerView()
 
         setSendButtonChange(context)
         setSendButtonOnClickListener(msgAdapter)
         return binding.root
     }
 
+    private fun setupToolbar() {
+        binding.ivToolbarBack.setOnClickListener {
+            val action = MessagesFragmentDirections.actionMessagesFragmentToChannelsFragment()
+            findNavController().navigate(action)
+        }
+        binding.tvStreamName.text = getString(R.string.stream_name, Datasource.getStreamById(streamId)?.name ?: "null")
+        binding.tvTopicName.text = getString(R.string.topic_name, Datasource.getTopicById(topicId)?.name ?: "null")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun initRecyclerView() {
+        binding.rvChat.adapter = msgAdapter
+        val rvLayoutManager = LinearLayoutManager(requireContext())
+        rvLayoutManager.generateDefaultLayoutParams()
+        binding.rvChat.layoutManager = rvLayoutManager
+        (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
     }
 
     private fun setMessageOnClickListener(

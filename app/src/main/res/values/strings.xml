@@ -2,7 +2,7 @@
     <string name="app_name">Homework_2</string>
     <string name="enter_message_hint">Enter Message…</string>
     <string name="send_message_description">Send message</string>
-    <string name="topic_general">Topic #general</string>
+    <string name="stream_name">%1$s</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="ic_search_channel_fragment">search</string>
     <string name="search_contacts_fragment">Search…</string>
@@ -16,4 +16,6 @@
     <string name="all_streams_tab_text">All streams</string>
     <string name="online_status">online</string>
     <string name="log_out_button_text">Log out</string>
+    <string name="back_button_description">back button</string>
+    <string name="topic_name">Topic: #%1$s</string>
 </resources>

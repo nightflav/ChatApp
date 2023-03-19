@@ -128,4 +128,21 @@ object Datasource {
             deleteTopics(stream, streamsToShow)
         }
     }
+
+    fun getTopicById(topicId: String): Topic? {
+        for(stream in streams)
+            for(topic in stream.topics)
+                if(topic.id == topicId)
+                    return topic
+
+        return null
+    }
+
+    fun getStreamById(streamId: String): Stream? {
+        for(stream in streams)
+            if(stream.id == streamId)
+                return stream
+
+        return null
+    }
 }

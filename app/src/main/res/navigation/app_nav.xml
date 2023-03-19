@@ -28,6 +28,9 @@
         <argument
             android:name="topicId"
             app:argType="string" />
+        <argument
+            android:name="streamId"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/contactsFragment"

@@ -16,15 +16,35 @@
         android:background="@color/secondary_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_toolbar_back"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@string/back_button_description"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_back_arrow"
+            app:tint="@color/white_text" />
+
+        <TextView
+            android:id="@+id/tv_stream_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="44dp"
+            android:textColor="@color/white_text"
+            android:textSize="24sp"
+            tools:text="#general" />
+
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <TextView
-        android:id="@+id/tv_topic"
+        android:id="@+id/tv_topic_name"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:background="@color/topic_background"
         android:gravity="center"
-        android:text="@string/topic_general"
+        android:text="@string/stream_name"
         android:textColor="@color/light_light_gray_text"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,7 +59,7 @@
         app:layout_constraintBottom_toTopOf="@+id/bottom_message_part"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_topic" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_topic_name" />
 
     <LinearLayout
         android:id="@+id/bottom_message_part"
