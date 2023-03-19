@@ -8,68 +8,29 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/top_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/secondary_color"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_topic"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@color/topic_background"
-        android:gravity="center"
-        android:text="@string/topic_general"
-        android:textColor="@color/light_light_gray_text"
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_toolbar" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_chat"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fg_main"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_message_part"
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toTopOf="@id/bnv_menu"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_topic" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:navGraph="@navigation/app_nav" />
 
-    <LinearLayout
-        android:id="@+id/bottom_message_part"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bnv_menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/primary_variant"
-        android:orientation="horizontal"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="8dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:minHeight="64dp"
+        app:itemIconTint="@color/bg_bnv"
+        app:itemTextColor="@color/bg_bnv"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/btn_menu" />
 
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/et_message"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_marginHorizontal="8dp"
-            android:layout_weight="9"
-            android:background="@drawable/bg_message_edit"
-            android:hint="@string/enter_message_hint"
-            android:paddingHorizontal="16dp"
-            android:textColor="@color/white_text"
-            android:textColorHint="@color/gray_text" />
-
-        <ImageButton
-            android:id="@+id/btn_send"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@drawable/bg_send_icon"
-            android:contentDescription="@string/send_message_description"
-            android:src="@drawable/ic_add" />
-
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

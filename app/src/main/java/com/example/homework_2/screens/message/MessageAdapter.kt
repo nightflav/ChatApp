@@ -1,4 +1,4 @@
-package com.example.homework_2
+package com.example.homework_2.screens.message
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -9,21 +9,30 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
+import com.example.homework_2.Datasource
+import com.example.homework_2.R
+import com.example.homework_2.dp
 import com.example.homework_2.models.Reaction
 import com.example.homework_2.models.SingleMessage
 import com.example.homework_2.views.EmojiView
 import com.example.homework_2.views.MessageViewGroup
 import com.example.homework_2.views.ReactionsViewGroup
 
-class MessageAdapter(private val getReaction: (String) -> Unit, private val context: Context) :
+class MessageAdapter(
+    private val getReaction: (String) -> Unit,
+    private val context: Context,
+    private val topicId: String
+    ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val RECEIVER_TYPE = 0
-    private val SENDER_TYPE = 1
-    private val SEPARATOR_TYPE = -1
+    private companion object {
+        private const val RECEIVER_TYPE = 0
+        private const val SENDER_TYPE = 1
+        private const val SEPARATOR_TYPE = -1
+    }
 
     override fun getItemViewType(position: Int): Int {
-        val message = Datasource.getMessages()[position]
+        val message = Datasource.getMessages(topicId)[position]
         return if (!message.isDataSeparator) {
             if (message.user_id == "user_1")
                 SENDER_TYPE
@@ -55,18 +64,18 @@ class MessageAdapter(private val getReaction: (String) -> Unit, private val cont
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is ReceivedMessageViewHolder -> {
-                holder.bind(Datasource.getMessages()[position])
+                holder.bind(Datasource.getMessages(topicId)[position])
             }
             is SentMessageViewHolder -> {
-                holder.bind(Datasource.getMessages()[position])
+                holder.bind(Datasource.getMessages(topicId)[position])
             }
             is DataSeparatorViewHolder -> {
-                holder.bind(Datasource.getMessages()[position])
+                holder.bind(Datasource.getMessages(topicId)[position])
             }
         }
     }
 
-    override fun getItemCount(): Int = Datasource.getMessages().size
+    override fun getItemCount(): Int = Datasource.getMessages(topicId).size
 
     inner class DataSeparatorViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val dateSepTv = itemView.findViewById<TextView>(R.id.date_separator)
@@ -82,16 +91,17 @@ class MessageAdapter(private val getReaction: (String) -> Unit, private val cont
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
             msgVg.reactions.setMaxSpace(277f.dp(context).toInt())
-            if (Datasource.getReactions(msgId).isEmpty())
+            if (Datasource.getReactions(msgId, topicId).isEmpty())
                 msgVg.reactions.visibility = View.GONE
             else
                 msgVg.reactions.visibility = View.VISIBLE
-            msgVg.reactions.addReactions(Datasource.getReactions(msgId)) {
+            msgVg.reactions.addReactions(Datasource.getReactions(msgId, topicId)) {
                 Datasource.changeReactionSelectedState(
                     msgId = msgId,
-                    reaction = it.reaction
+                    reaction = it.reaction,
+                    topicId = topicId
                 )
-                notifyItemChanged(Datasource.getMessages().map { msg -> msg.message_id }
+                notifyItemChanged(Datasource.getMessages(topicId).map { msg -> msg.message_id }
                     .indexOf(msgId))
             }
             msgVg.name.text = msg.senderName
@@ -115,15 +125,16 @@ class MessageAdapter(private val getReaction: (String) -> Unit, private val cont
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
             msgSent.text = msg.msg
-            reactionsSent.addReactions(Datasource.getReactions(msgId)) {
+            reactionsSent.addReactions(Datasource.getReactions(msgId, topicId)) {
                 Datasource.changeReactionSelectedState(
                     reaction = it.reaction,
-                    msgId = msgId
+                    msgId = msgId,
+                    topicId
                 )
-                notifyItemChanged(Datasource.getMessages().map { msg -> msg.message_id }
+                notifyItemChanged(Datasource.getMessages(topicId).map { msg -> msg.message_id }
                     .indexOf(msgId))
             }
-            if (Datasource.getReactions(msgId).isEmpty())
+            if (Datasource.getReactions(msgId, topicId).isEmpty())
                 reactionsSent.visibility = View.GONE
             else
                 reactionsSent.visibility = View.VISIBLE
