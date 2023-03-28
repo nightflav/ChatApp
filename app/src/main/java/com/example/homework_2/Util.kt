@@ -2,8 +2,18 @@ package com.example.homework_2
 
 import android.content.Context
 import android.util.TypedValue
+import kotlinx.coroutines.CancellationException
 import java.time.LocalDate
 
+suspend fun <R> runCatchingNonCancellation(block: suspend () -> R): Result<R> {
+    return try {
+        Result.success(block())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+}
 
 fun Float.sp(context: Context) = TypedValue.applyDimension(
     TypedValue.COMPLEX_UNIT_SP,
@@ -25,7 +35,7 @@ fun Float.px(context: Context) = TypedValue.applyDimension(
 
 fun LocalDate.parseDate(): String {
     val currDayOfMonth = this.dayOfMonth
-    val currMonth = when(this.month.value) {
+    val currMonth = when (this.month.value) {
         0 -> "Jan"
         1 -> "Feb"
         2 -> "Mar"

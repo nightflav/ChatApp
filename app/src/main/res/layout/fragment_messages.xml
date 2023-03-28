@@ -8,6 +8,28 @@
     android:orientation="vertical"
     tools:context=".screens.message.MessagesFragment">
 
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/pb_messages"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_messages_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
+        android:text="@string/error_text"
+        android:textColor="@color/offline_status"/>
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/top_toolbar"

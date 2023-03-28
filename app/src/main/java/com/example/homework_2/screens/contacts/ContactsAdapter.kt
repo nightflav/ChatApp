@@ -6,22 +6,26 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.homework_2.R
 import com.example.homework_2.models.UserProfile
 
-class ContactsAdapter(private val context: Context, private val contactsList: List<UserProfile>) : RecyclerView.Adapter<ContactsAdapter.ContactViewHolder>() {
+class ContactsAdapter(private val context: Context) : RecyclerView.Adapter<ContactsAdapter.ContactViewHolder>() {
+
+    private var dataList: List<UserProfile> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.contact_layout, parent, false)
         return ContactViewHolder(view)
     }
 
-    override fun getItemCount(): Int = contactsList.size
+    override fun getItemCount(): Int = dataList.size
 
     override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
-        holder.bind(contactsList[position])
+        holder.bind(dataList[position])
     }
 
     inner class ContactViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -36,9 +40,44 @@ class ContactsAdapter(private val context: Context, private val contactsList: Li
             else
                 context.resources.getColor(R.color.offline_status, context.theme)
             activeStatus.setCardBackgroundColor(isActiveStatusColor)
-            profileImage.setImageDrawable(profile.tmpProfilePhoto)
+            profileImage.setImageDrawable(profile.tmpProfilePhoto?.let {
+                AppCompatResources.getDrawable(context,
+                    it
+                )
+            })
             name.text = profile.fullName
             email.text = profile.email
+        }
+    }
+
+    fun submitList(profiles: List<UserProfile>) {
+        val diffUtil = DiffCallback(
+            dataList,
+            profiles
+        )
+        val diffResult = DiffUtil.calculateDiff(diffUtil)
+        dataList = profiles
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class DiffCallback(
+        private val oldList: List<UserProfile>,
+        private val newList: List<UserProfile>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val item1 = oldList[oldItemPosition]
+            val item2 = newList[newItemPosition]
+            return item1.email == item2.email
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val item1 = oldList[oldItemPosition]
+            val item2 = newList[newItemPosition]
+            return item1 == item2
         }
     }
 }

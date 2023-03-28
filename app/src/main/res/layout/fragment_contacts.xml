@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".screens.contacts.ContactsFragment"
-    android:background="@color/primary_color">
+    android:background="@color/primary_color"
+    tools:context=".screens.contacts.ContactsFragment">
 
     <LinearLayout
         android:id="@+id/ll_top_search_bar_contacts"
@@ -17,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <EditText
+            android:id="@+id/et_users_search"
             android:layout_width="0dp"
             android:layout_height="83dp"
             android:layout_weight="9"
@@ -24,12 +25,12 @@
             android:hint="@string/users_contacts_screen_search"
             android:importantForAccessibility="no"
             android:importantForAutofill="no"
+            android:inputType="text"
             android:paddingStart="64dp"
             android:paddingEnd="8dp"
             android:textColor="@color/white_text"
             android:textColorHint="@color/light_light_gray_text"
-            android:inputType="text"
-            android:textSize="24sp"/>
+            android:textSize="24sp" />
 
         <ImageView
             android:layout_width="0dp"
@@ -44,11 +45,44 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_contacts"
-        app:layout_constraintTop_toBottomOf="@id/ll_top_search_bar_contacts"
-        app:layout_constraintStart_toStartOf="parent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        />
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_top_search_bar_contacts" />
 
+    <TextView
+        android:id="@+id/tv_error_streams"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmer_contacts"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_top_search_bar_contacts"
+        app:shimmer_duration="4500">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <include layout="@layout/shimmer_contact_layout" />
+            <include layout="@layout/shimmer_contact_layout" />
+            <include layout="@layout/shimmer_contact_layout" />
+            <include layout="@layout/shimmer_contact_layout" />
+
+        </LinearLayout>
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

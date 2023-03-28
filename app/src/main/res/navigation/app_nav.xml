@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/channelsFragment"
-        android:name="com.example.homework_2.screens.channels.ChannelsFragment"
+        android:name="com.example.homework_2.screens.stream.StreamFragment"
         android:label="fragment_channels"
         tools:layout="@layout/fragment_channels" >
         <action
@@ -24,7 +24,7 @@
         tools:layout="@layout/fragment_messages" >
         <action
             android:id="@+id/action_messagesFragment_to_channelsFragment"
-            app:destination="@id/channelsFragment" />
+            app:popUpTo="@id/channelsFragment"/>
         <argument
             android:name="topicId"
             app:argType="string" />

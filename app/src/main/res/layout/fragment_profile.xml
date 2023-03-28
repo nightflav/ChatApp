@@ -40,6 +40,7 @@
         app:layout_constraintTop_toBottomOf="@id/cd_helper_profile_screen" />
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="188dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="@id/cd_helper_profile_screen"
@@ -50,35 +51,37 @@
             android:id="@+id/tv_profile_meeting_status"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_weight="3"
             android:text="In a meeting"
             android:textColor="@color/light_gray_text"
-            android:textSize="20sp"
-            android:layout_weight="3"
-            android:layout_gravity="start"/>
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/tv_profile_online_status"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/online_status"
+            android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:foregroundGravity="left"
             android:gravity="end"
-            android:layout_gravity="center_vertical"
-            android:textColor="@color/online_status"/>
+            android:text="@string/online_status"
+            android:textColor="@color/online_status" />
 
     </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatButton
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cd_helper_profile_screen"
-        android:layout_marginTop="244dp"
         android:layout_width="184dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/white_text"
+        android:layout_marginBottom="80dp"
         android:background="@drawable/bg_logout_button_profile_screen"
         android:text="@string/log_out_button_text"
-        />
+        android:textColor="@color/white_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.541"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

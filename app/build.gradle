@@ -8,6 +8,11 @@ android {
     namespace 'com.example.homework_2'
     compileSdk 33
 
+    packagingOptions {
+        exclude "META-INF/DEPENDENCIES"
+    }
+
+
     defaultConfig {
         applicationId "com.example.homework_2"
         minSdk 26
@@ -34,6 +39,7 @@ android {
 }
 
 dependencies {
+
     def nav_version = "2.5.3"
 
     implementation 'androidx.core:core-ktx:1.9.0'
@@ -42,4 +48,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
 }

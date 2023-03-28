@@ -18,4 +18,5 @@
     <string name="log_out_button_text">Log out</string>
     <string name="back_button_description">back button</string>
     <string name="topic_name">Topic: #%1$s</string>
+    <string name="error_text">Error</string>
 </resources>

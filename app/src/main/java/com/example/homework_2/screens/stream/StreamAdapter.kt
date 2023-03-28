@@ -1,6 +1,7 @@
-package com.example.homework_2.screens.channels
+package com.example.homework_2.screens.stream
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,22 +10,25 @@ import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat.getColor
 import androidx.navigation.NavController
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.homework_2.Datasource
 import com.example.homework_2.R
+import com.example.homework_2.datasource.StreamDatasource
 import com.example.homework_2.models.Stream
 import com.example.homework_2.models.Topic
 
 class StreamAdapter(
-    private val dataList: List<Any>,
     private val context: Context,
-    private val navController: NavController
+    private val navController: NavController,
+    private val onStreamClickListener: (Stream) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private companion object {
         private const val TOPIC_VIEW_TYPE = 0
         private const val CHANNEL_VIEW_TYPE = 1
     }
+
+    private var dataList = emptyList<Any>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -41,6 +45,7 @@ class StreamAdapter(
     override fun getItemCount(): Int = dataList.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        Log.d("1231231234", "onBind ${dataList[position]}")
         when (holder) {
             is StreamViewHolder -> {
                 holder.bind(dataList[position] as Stream)
@@ -58,26 +63,67 @@ class StreamAdapter(
         }
     }
 
+    fun submitList(streams: List<Any>) {
+        val diffUtil = DiffCallback(
+            dataList,
+            streams
+        )
+        val diffResult = DiffUtil.calculateDiff(diffUtil)
+        dataList = streams
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class DiffCallback(
+        private val oldList: List<Any>,
+        private val newList: List<Any>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val item1 = oldList[oldItemPosition]
+            val item2 = newList[newItemPosition]
+            return if (item1 is Stream && item2 is Stream)
+                item1.id == item2.id
+            else
+                if (item1 is Topic && item2 is Topic)
+                    item1.id == item2.id
+                else
+                    false
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val item1 = oldList[oldItemPosition]
+            val item2 = newList[newItemPosition]
+            return if (item1 is Stream && item2 is Stream)
+                item1 == item2
+            else
+                if (item1 is Topic && item2 is Topic)
+                    item1 == item2
+                else
+                    false
+        }
+    }
+
     inner class StreamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val streamName = itemView.findViewById<TextView>(R.id.tv_stream_name)
         private val streamArrow = itemView.findViewById<ImageView>(R.id.iv_stream_button)
 
         fun bind(stream: Stream) {
-            streamName.text = stream.name
+            itemView.setOnClickListener {
+                onStreamClickListener(stream)
+            }
+            Log.d("1231231234", "bind $stream")
             val imageToShow = if (stream.isSelected)
                 AppCompatResources.getDrawable(context, R.drawable.ic_close_arrow)
             else
                 AppCompatResources.getDrawable(context, R.drawable.ic_drop_down_arrow)
             streamArrow.setImageDrawable(imageToShow)
 
-            streamArrow.setOnClickListener {
-                Datasource.changeStreamSelectedState(streamId = stream.id)
-                notifyItemChanged(Datasource.getStreams().indexOf(stream))
-                if(stream.isSelected)
-                    notifyItemRangeInserted(Datasource.getStreams().indexOf(stream) + 1, stream.topics.size)
-                else
-                    notifyItemRangeRemoved(Datasource.getStreams().indexOf(stream) + 1, stream.topics.size)
-            }
+            streamName.text = stream.name
+
+
         }
     }
 
@@ -86,19 +132,35 @@ class StreamAdapter(
         private val topicMsgCount = itemView.findViewById<TextView>(R.id.topic_msg_count)
 
         fun bind(topic: Topic) {
+            Log.d("1231231234", "$topic")
             topicName.text = topic.name
             topicMsgCount.text = topic.msgCount.toString()
-            when(topic.msgCount) {
+            when (topic.msgCount) {
                 in 0..50 -> itemView.setBackgroundColor(getColor(context, R.color.color_range_0_50))
-                in 51..100 -> itemView.setBackgroundColor(getColor(context, R.color.color_range_51_100))
-                in 101..250 -> itemView.setBackgroundColor(getColor(context, R.color.color_range_101_250))
-                in 251..500 -> itemView.setBackgroundColor(getColor(context, R.color.color_range_251_500))
+                in 51..100 -> itemView.setBackgroundColor(
+                    getColor(
+                        context,
+                        R.color.color_range_51_100
+                    )
+                )
+                in 101..250 -> itemView.setBackgroundColor(
+                    getColor(
+                        context,
+                        R.color.color_range_101_250
+                    )
+                )
+                in 251..500 -> itemView.setBackgroundColor(
+                    getColor(
+                        context,
+                        R.color.color_range_251_500
+                    )
+                )
                 else -> itemView.setBackgroundColor(getColor(context, R.color.color_range_501_inf))
             }
             itemView.setOnClickListener {
-                if(Datasource.containsTopic(topic.id)) {
+                if (StreamDatasource.containsTopic(topic.id)) {
                     val action =
-                        ChannelsFragmentDirections.actionChannelsFragmentToMessagesFragment(
+                        StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
                             topicId = topic.id,
                             streamId = topic.parentId
                         )

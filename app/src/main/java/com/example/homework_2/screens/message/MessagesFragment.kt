@@ -7,29 +7,43 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
-import com.example.homework_2.Datasource
 import com.example.homework_2.R
 import com.example.homework_2.databinding.FragmentMessagesBinding
+import com.example.homework_2.datasource.MessageDatasource
+import com.example.homework_2.datasource.StreamDatasource
 import com.example.homework_2.dp
 import com.example.homework_2.emojiSetNCS
 import com.example.homework_2.models.Reaction
 import com.example.homework_2.models.SingleMessage
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class MessagesFragment : Fragment() {
+
 
     private val args: MessagesFragmentArgs by navArgs()
     private val topicId by lazy {
         args.topicId
     }
+
+    private val viewModel: MessagesViewModel by viewModels {
+        MessagesViewModel.Factory(topicId)
+    }
+
     private val streamId by lazy {
         args.streamId
     }
@@ -54,6 +68,11 @@ class MessagesFragment : Fragment() {
         setupToolbar()
         initRecyclerView()
 
+        viewModel.screenState
+            .flowWithLifecycle(lifecycle)
+            .onEach(::render)
+            .launchIn(lifecycleScope)
+
         setSendButtonChange(context)
         setSendButtonOnClickListener(msgAdapter)
         return binding.root
@@ -64,8 +83,12 @@ class MessagesFragment : Fragment() {
             val action = MessagesFragmentDirections.actionMessagesFragmentToChannelsFragment()
             findNavController().navigate(action)
         }
-        binding.tvStreamName.text = getString(R.string.stream_name, Datasource.getStreamById(streamId)?.name ?: "null")
-        binding.tvTopicName.text = getString(R.string.topic_name, Datasource.getTopicById(topicId)?.name ?: "null")
+        binding.tvStreamName.text = getString(
+            R.string.stream_name,
+            StreamDatasource.getStreamById(streamId)?.name ?: "null"
+        )
+        binding.tvTopicName.text =
+            getString(R.string.topic_name, StreamDatasource.getTopicById(topicId)?.name ?: "null")
     }
 
     override fun onDestroyView() {
@@ -86,8 +109,9 @@ class MessagesFragment : Fragment() {
         reaction: Reaction,
         msgId: String
     ) {
-        Datasource.addReaction(reaction, msgId, topicId)
-        msgAdapter.notifyItemChanged(Datasource.getMessages(topicId).map { it.message_id }.indexOf(msgId))
+        MessageDatasource.addReaction(reaction, msgId, topicId)
+        msgAdapter.notifyItemChanged(MessageDatasource.getMessages(topicId).map { it.message_id }
+            .indexOf(msgId))
     }
 
     private fun getReaction(msgId: String, context: Context) {
@@ -99,11 +123,11 @@ class MessagesFragment : Fragment() {
                 )
             bottomSheetDialog = BottomSheetDialog(context, R.style.BottomSheetDialogTheme)
             val rvEmojis = dialogLayout.findViewById<RecyclerView>(R.id.rv_emoji_bsd)
-            val emojiAdapter = EmojiAdapter(Datasource.getEmojis()) {
+            val emojiAdapter = EmojiAdapter(MessageDatasource.getEmojis()) {
                 setMessageOnClickListener(
                     msgAdapter = msgAdapter,
                     reaction = Reaction(
-                        emojiSetNCS[Datasource.getEmojis().indexOf(it)],
+                        emojiSetNCS[MessageDatasource.getEmojis().indexOf(it)],
                         1,
                         true
                     ),
@@ -127,12 +151,12 @@ class MessagesFragment : Fragment() {
                     reactions = mutableListOf(),
                     user_id = "user_1",
                     senderName = "Yaroslav",
-                    message_id = Datasource.getMessages(topicId).size.toString() + 1
+                    message_id = MessageDatasource.getMessages(topicId).size.toString() + 1
                 )
-                Datasource.addMessage(topicId, newMsg)
+                lifecycleScope.launch { viewModel.newSentMessage.emit(newMsg) }
                 binding.etMessage.text!!.clear()
-                adapter.notifyItemInserted(Datasource.getMessages(topicId).size)
-                binding.rvChat.scrollToPosition(Datasource.getMessages(topicId).lastIndex)
+                adapter.notifyItemInserted(MessageDatasource.getMessages(topicId).size)
+                binding.rvChat.scrollToPosition(MessageDatasource.getMessages(topicId).lastIndex)
             }
         }
     }
@@ -148,6 +172,34 @@ class MessagesFragment : Fragment() {
                     binding.btnSend.setImageDrawable(
                         AppCompatResources.getDrawable(context, R.drawable.ic_send)
                     )
+                }
+            }
+        }
+    }
+
+    private fun render(state: MessageScreenState) {
+        when (state) {
+            MessageScreenState.Error -> {
+                binding.apply {
+                    tvMessagesError.isVisible = true
+                    pbMessages.isVisible = false
+                    rvChat.isVisible = false
+                }
+            }
+            is MessageScreenState.Data -> {
+                binding.apply {
+                    tvMessagesError.isVisible = false
+                    rvChat.isVisible = true
+                    pbMessages.isVisible = false
+                    msgAdapter.submitList(state.messages)
+                }
+            }
+            MessageScreenState.Init -> {}
+            MessageScreenState.Loading -> {
+                binding.apply {
+                    tvMessagesError.isVisible = false
+                    rvChat.isVisible = false
+                    pbMessages.isVisible = true
                 }
             }
         }
