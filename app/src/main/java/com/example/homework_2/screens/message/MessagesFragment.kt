@@ -25,6 +25,7 @@ import com.example.homework_2.datasource.MessageDatasource
 import com.example.homework_2.datasource.StreamDatasource
 import com.example.homework_2.dp
 import com.example.homework_2.emojiSetNCS
+import com.example.homework_2.messages
 import com.example.homework_2.models.Reaction
 import com.example.homework_2.models.SingleMessage
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -74,7 +75,7 @@ class MessagesFragment : Fragment() {
             .launchIn(lifecycleScope)
 
         setSendButtonChange(context)
-        setSendButtonOnClickListener(msgAdapter)
+        setSendButtonOnClickListener()
         return binding.root
     }
 
@@ -110,7 +111,7 @@ class MessagesFragment : Fragment() {
         msgId: String
     ) {
         MessageDatasource.addReaction(reaction, msgId, topicId)
-        msgAdapter.notifyItemChanged(MessageDatasource.getMessages(topicId).map { it.message_id }
+        msgAdapter.notifyItemChanged(viewModel.messages.map { it.message_id }
             .indexOf(msgId))
     }
 
@@ -143,7 +144,7 @@ class MessagesFragment : Fragment() {
         }
     }
 
-    private fun setSendButtonOnClickListener(adapter: MessageAdapter) {
+    private fun setSendButtonOnClickListener() {
         binding.btnSend.setOnClickListener {
             if (binding.etMessage.text?.isNotEmpty() == true) {
                 val newMsg = SingleMessage(
@@ -151,12 +152,10 @@ class MessagesFragment : Fragment() {
                     reactions = mutableListOf(),
                     user_id = "user_1",
                     senderName = "Yaroslav",
-                    message_id = MessageDatasource.getMessages(topicId).size.toString() + 1
+                    message_id = (messages.size + 1).toString()
                 )
                 lifecycleScope.launch { viewModel.newSentMessage.emit(newMsg) }
                 binding.etMessage.text!!.clear()
-                adapter.notifyItemInserted(MessageDatasource.getMessages(topicId).size)
-                binding.rvChat.scrollToPosition(MessageDatasource.getMessages(topicId).lastIndex)
             }
         }
     }

@@ -15,7 +15,8 @@ object MessageDatasource {
         fun getCodeString() = String(Character.toChars(code.toInt(16)))
     }
 
-    fun getMessages(topicId: String): List<SingleMessage> {
+    suspend fun getMessages(topicId: String): List<SingleMessage> {
+        delay(500L)
         return messages[topicId]!!
     }
 

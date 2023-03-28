@@ -8,16 +8,17 @@
     android:orientation="vertical"
     tools:context=".screens.message.MessagesFragment">
 
-    <androidx.core.widget.ContentLoadingProgressBar
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/pb_messages"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:indeterminate="true"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:indicatorColor="@color/secondary_color"/>
 
     <TextView
         android:id="@+id/tv_messages_error"

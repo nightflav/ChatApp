@@ -26,7 +26,7 @@ class MessagesViewModel(private val topicId: String) : ViewModel() {
     private val _screenState: MutableStateFlow<MessageScreenState> =
         MutableStateFlow(MessageScreenState.Init)
     val screenState get() = _screenState.asStateFlow()
-    private var messages: List<SingleMessage> = emptyList()
+    var messages: List<SingleMessage> = emptyList()
     val newSentMessage: MutableSharedFlow<SingleMessage> = MutableSharedFlow()
 
     init {
