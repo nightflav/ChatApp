@@ -13,7 +13,6 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.homework_2.R
-import com.example.homework_2.datasource.StreamDatasource
 import com.example.homework_2.models.Stream
 import com.example.homework_2.models.Topic
 
@@ -122,8 +121,6 @@ class StreamAdapter(
             streamArrow.setImageDrawable(imageToShow)
 
             streamName.text = stream.name
-
-
         }
     }
 
@@ -158,14 +155,15 @@ class StreamAdapter(
                 else -> itemView.setBackgroundColor(getColor(context, R.color.color_range_501_inf))
             }
             itemView.setOnClickListener {
-                if (StreamDatasource.containsTopic(topic.id)) {
-                    val action =
-                        StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
-                            topicId = topic.id,
-                            streamId = topic.parentId
-                        )
-                    navController.navigate(action)
-                }
+                Log.d("findingTopicName", topic.name)
+                val action =
+                    StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
+                        topicId = topic.id,
+                        streamId = topic.parentId,
+                        topicName = topic.name,
+                        streamName = topic.parentName
+                    )
+                navController.navigate(action)
             }
         }
     }

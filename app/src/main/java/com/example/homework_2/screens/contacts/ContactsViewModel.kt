@@ -3,6 +3,7 @@ package com.example.homework_2.screens.contacts
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.homework_2.datasource.ProfilesDatasource
+import com.example.homework_2.datasource.ProfilesDatasource.getContacts
 import com.example.homework_2.runCatchingNonCancellation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,6 +21,7 @@ class ContactsViewModel : ViewModel() {
     init {
         subscribeToProfileSearch()
         viewModelScope.launch {
+            getContacts()
             _searchState.emit(searchForProfile(""))
         }
     }

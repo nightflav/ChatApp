@@ -3,9 +3,10 @@ package com.example.homework_2.screens.stream
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.homework_2.datasource.StreamDatasource
+import com.example.homework_2.datasource.StreamDatasource.getAllStreams
+import com.example.homework_2.datasource.StreamDatasource.getSearchStreams
+import com.example.homework_2.datasource.StreamDatasource.getSubscribedStreams
 import com.example.homework_2.models.Stream
-import com.example.homework_2.models.Topic
 import com.example.homework_2.runCatchingNonCancellation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,125 +16,82 @@ import kotlinx.coroutines.launch
 
 class StreamViewModel : ViewModel() {
 
-    private val _searchState: MutableStateFlow<StreamScreenState> =
+    private val _screenState: MutableStateFlow<StreamScreenState> =
         MutableStateFlow(StreamScreenState.Init)
-    val searchState get() = _searchState.asStateFlow()
-    val searchRequestState: MutableSharedFlow<String> = MutableSharedFlow()
-    val openTopicState: MutableSharedFlow<Stream> = MutableSharedFlow()
-    val subscribedListState: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    private var listOfStreams: MutableList<Stream> = mutableListOf()
-    private var listToShow: MutableList<Any> = mutableListOf()
-    private val listState: MutableSharedFlow<MutableList<Any>?> = MutableSharedFlow()
+    val screenState get() = _screenState.asStateFlow()
+
+    private var listOfStreams: List<Stream>? = emptyList()
+    private var listOfSubscriptions: List<Stream>? = emptyList()
+    private val listToShow: List<Any>?
+        get() = toListToShow()
+
+    private fun toListToShow(): List<Any>? {
+        val listFrom = (if (showSubscribed) listOfSubscriptions else listOfStreams) ?: return null
+        val result = mutableListOf<Any>()
+        for (stream in listFrom) {
+            result.add(stream)
+            if (stream.isSelected)
+                result.addAll(
+                    stream.topics
+                )
+        }
+        return result
+    }
+
+    private val listState: MutableSharedFlow<List<Any>?> = MutableSharedFlow()
+
+    private val searchRequestState: MutableSharedFlow<String> = MutableSharedFlow()
+    private val streamState: MutableSharedFlow<Stream> = MutableSharedFlow()
+
+    var showSubscribed = true
 
     init {
-        subscribeToSearchRequest()
-        subscribeToOpenTopic()
-        subscribeToChangeToSubscribedList()
-        subscribeToListChanges()
+        subscribeToListStateChanges()
+        subscribeToSearch()
         viewModelScope.launch {
-            listOfStreams = StreamDatasource.getAllStreams()
-            listToShow = listOfStreams.toMutableList()
-            listState.emit(getSubscribedItems())
+            _screenState.emit(loadStreams())
         }
     }
 
-    private suspend fun searchForStream(request: String) {
-        clearFromTopics()
-        val searchResult = runCatchingNonCancellation {
-            _searchState.emit(StreamScreenState.Loading)
-            if (request.isEmpty() || request.isBlank()) {
-                listOfStreams = StreamDatasource.getAllStreams()
-                getSubscribedItems()
-            } else {
-                listOfStreams = StreamDatasource.getSearchStreams(request)
-                getSubscribedItems()
-            }
+    private suspend fun loadStreams(): StreamScreenState {
+        val loadedStreams = runCatchingNonCancellation {
+            _screenState.emit(StreamScreenState.Loading)
+            listOfStreams = getAllStreams()
+            listOfSubscriptions = getSubscribedStreams()
+            listToShow
         }.onFailure {
-            Log.d("Channels", "searchForStreamError")
+            Log.d(
+                "StreamViewModelDebugLog",
+                "Failed on searching for stream, caused by ${it.cause}"
+            )
         }.getOrNull()
 
-        listState.emit(searchResult)
+        return getScreenState(loadedStreams)
     }
 
-    private suspend fun updateTopicsOfCurrentStream(stream: Stream) {
-
-        changeStreamSelectedState(stream)
-        val currStream = listOfStreams[listOfStreams.indexOf(stream)]
-        Log.d("012345", "currStream is $currStream")
-        val currList: MutableList<Any> = getSubscribedItems().toMutableList()
-        Log.d("012345", "currList is $currList")
-        val topicsToAdd = currStream.topics
-        if (!currStream.isSelected) {
-            Log.d("55555", "true $currStream")
-            listToShow =
-                currList.filter { it is Stream || it is Topic && it.parentId != currStream.id }
-                    .toMutableList()
-            listState.emit(listToShow)
-        } else {
-            Log.d("55555", "false $currStream")
-            val indexOfStream = currList.indexOf(currStream)
-            currList.addAll(indexOfStream + 1, topicsToAdd)
-            listToShow = currList
-            listState.emit(listToShow)
-        }
-        Log.d("012345", "sent to listState $listOfStreams")
-
-    }
-
-    private fun getSubscribedItems(): MutableList<Any> {
-        var currList = listOfStreams
-        currList = if (subscribedListState.value)
-            currList.filter { it.isSubscribed }.toMutableList()
-        else
-            currList.toMutableList()
-        return currList.toMutableList()
-    }
-
-    private suspend fun showUpdatedList() {
-        val currList: MutableList<Any> = getSubscribedItems()
-        Log.d("11111", "$currList")
-        listState.emit(currList)
-    }
-
-    private fun getScreenState(state: MutableList<Any>?): StreamScreenState {
-        Log.d("012345", "return to fragment -> $state")
+    private fun getScreenState(state: List<Any>?): StreamScreenState {
         return state?.let { StreamScreenState.Data(it.toList()) }
             ?: StreamScreenState.Error
     }
 
-    private fun subscribeToListChanges() {
+    private fun subscribeToListStateChanges() {
         listState
-            .onEach { _searchState.emit(getScreenState(it)) }
-            .flowOn(Dispatchers.Default)
-            .launchIn(viewModelScope)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-    private fun subscribeToSearchRequest() {
-        searchRequestState
-            .distinctUntilChanged()
-            .debounce(500L)
-            .flatMapLatest {
-                flow {
-                    emit(
-                        searchForStream(it)
-                    )
-                }
+            .onEach {
+                _screenState.emit(getScreenState(it))
             }
             .flowOn(Dispatchers.Default)
             .launchIn(viewModelScope)
     }
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    private fun subscribeToOpenTopic() {
-        openTopicState
-            .debounce(50L)
+    private fun subscribeToSearch() {
+        searchRequestState
+            .distinctUntilChanged()
+            .debounce(500L)
             .flatMapLatest {
                 flow {
                     emit(
-                        updateTopicsOfCurrentStream(
-                            it
-                        )
+                        searchForStreamNetwork(it)
                     )
                 }
             }
@@ -141,24 +99,59 @@ class StreamViewModel : ViewModel() {
             .launchIn(viewModelScope)
     }
 
-    private fun subscribeToChangeToSubscribedList() {
-        subscribedListState
-            .onEach { clearFromTopics(); showUpdatedList() }
-            .flowOn(Dispatchers.Default)
-            .launchIn(viewModelScope)
+    private suspend fun searchForStreamNetwork(request: String) {
+        val searchResult = runCatchingNonCancellation {
+            _screenState.emit(StreamScreenState.Loading)
+            if (request.isEmpty() || request.isBlank())
+                if (showSubscribed) {
+                    getSubscribedStreams()
+
+                } else {
+                    getAllStreams()
+                }
+            else {
+                listOfStreams = getSearchStreams(request, showSubscribed)
+                listOfStreams
+            }
+        }.onFailure {
+            Log.d(
+                "StreamViewModelDebugLog",
+                "Failed on searching for stream, caused by ${it.cause}"
+            )
+        }.getOrNull()
+
+        if (showSubscribed)
+            listOfSubscriptions = searchResult
+        else
+            listOfStreams = searchResult
+
+        refresh()
     }
 
-    private fun changeStreamSelectedState(stream: Stream) {
-        if (stream.id in listOfStreams.map { it.id }) {
-            listOfStreams[listOfStreams.indexOf(stream)].isSelected = !stream.isSelected
-            Log.d("012345", "change to ${listOfStreams[listOfStreams.indexOf(stream)].isSelected}")
+    fun searchForStream(request: String) {
+        viewModelScope.launch {
+            searchRequestState.emit(request)
         }
-        else return
     }
 
-    private fun clearFromTopics() {
-        for (item in listOfStreams)
-            item.isSelected = false
-        listToShow = listOfStreams.toMutableList()
+    private fun changeStreamIsSelected(streamToChange: Stream) {
+        val currList = (if (showSubscribed) listOfSubscriptions else listOfStreams)!!
+        if (streamToChange in currList)
+            currList[currList.indexOf(streamToChange)].isSelected =
+                !currList[currList.indexOf(streamToChange)].isSelected
+        refresh()
+    }
+
+    fun renewTopics(stream: Stream) {
+        changeStreamIsSelected(stream)
+        viewModelScope.launch {
+            streamState.emit(stream)
+        }
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _screenState.emit(getScreenState(listToShow))
+        }
     }
 }

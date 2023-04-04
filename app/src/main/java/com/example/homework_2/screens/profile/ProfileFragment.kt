@@ -4,57 +4,34 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.homework_2.R
+import com.example.homework_2.Status
 import com.example.homework_2.databinding.FragmentProfileBinding
-import com.example.homework_2.datasource.ProfilesDatasource
+import com.example.homework_2.models.UserProfile
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: ProfileViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
-        val context = requireContext()
-        val profile = ProfilesDatasource.getProfile()
-        val profileImg = profile.tmpProfilePhoto
-        val name = profile.fullName
-
-        binding.ivProfileImage.setImageDrawable(
-            profileImg?.let {
-                AppCompatResources.getDrawable(
-                    context,
-                    it
-                )
-            }
-        )
-
-        binding.tvProfileName.text = name
-
-        if (profile.isActive) {
-            binding.tvProfileOnlineStatus.text = getString(R.string.online_is_active)
-            binding.tvProfileOnlineStatus.setTextColor(
-                resources.getColor(
-                    R.color.online_status,
-                    context.theme
-                )
-            )
-        } else {
-            binding.tvProfileOnlineStatus.text = getString(R.string.online_is_not_active)
-            binding.tvProfileOnlineStatus.setTextColor(
-                resources.getColor(
-                    R.color.offline_status,
-                    context.theme
-                )
-            )
-        }
-
-        binding.tvProfileMeetingStatus.text = profile.meetingStatus
+        viewModel.screenState
+            .flowWithLifecycle(lifecycle)
+            .onEach(::render)
+            .launchIn(lifecycleScope)
 
         return binding.root
     }
@@ -64,4 +41,66 @@ class ProfileFragment : Fragment() {
         _binding = null
     }
 
+    private fun render(state: ProfileScreenState) {
+        when (state) {
+            ProfileScreenState.Error -> {
+                binding.apply {
+                    tvProfileError.isVisible = true
+                    cdHelperProfileScreen.isVisible = false
+                    tvProfileName.isVisible = false
+                    tvProfileOnlineStatus.isVisible = false
+                    shimmerProfile.isVisible = false
+                }
+            }
+            is ProfileScreenState.Profile -> {
+                binding.apply {
+                    tvProfileError.isVisible = false
+                    shimmerProfile.isVisible = false
+                }
+                showProfile(state.profile)
+            }
+            ProfileScreenState.Init -> {}
+            ProfileScreenState.Loading -> {
+                binding.apply {
+                    tvProfileError.isVisible = false
+                    cdHelperProfileScreen.isVisible = false
+                    tvProfileName.isVisible = false
+                    tvProfileOnlineStatus.isVisible = false
+                    shimmerProfile.isVisible = true
+                }
+            }
+        }
+    }
+
+    private fun showProfile(profile: UserProfile) {
+
+        binding.apply {
+            cdHelperProfileScreen.isVisible = true
+            tvProfileName.isVisible = true
+            tvProfileOnlineStatus.isVisible = true
+        }
+
+        Glide.with(this).load(profile.avatarSource).into(binding.ivProfileImage)
+        binding.tvProfileName.text = profile.fullName
+        val textAndColor = when (profile.status) {
+            Status.ACTIVE -> {
+                Pair(getString(R.string.online_is_active),
+                R.color.online_status)
+            }
+            Status.OFFLINE -> {
+                Pair(getString(R.string.online_is_active),
+                R.color.online_status)
+            }
+            else -> {
+                Pair(getString(R.string.online_is_active), R.color.online_status)
+            }
+        }
+        binding.tvProfileOnlineStatus.text = textAndColor.first
+        binding.tvProfileOnlineStatus.setTextColor(
+            resources.getColor(
+                textAndColor.second,
+                context?.theme
+            )
+        )
+    }
 }

@@ -2,15 +2,13 @@ package com.example.homework_2.views
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginRight
-import androidx.core.view.marginTop
+import androidx.core.view.*
 import com.example.homework_2.R
 import com.example.homework_2.dp
 
@@ -26,7 +24,7 @@ class MessageViewGroup
     defStyleAttr,
     defStyleRes
 ) {
-    val image: ImageView by lazy { findViewById(R.id.profile_image) }
+    private val image: ImageView by lazy { findViewById(R.id.profile_image) }
     val message: TextView by lazy { findViewById(R.id.message_text) }
     val name: TextView by lazy { findViewById(R.id.sender_name) }
     private val linearLayout: LinearLayout by lazy { findViewById(R.id.msg_vg_text) }
@@ -57,10 +55,28 @@ class MessageViewGroup
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-
-        measureChildren(widthMeasureSpec, heightMeasureSpec)
+        if(reactions.childCount == 1)
+            reactions.isVisible = false
 
         reactions.setMaxSpace(277f.dp(context).toInt())
+        message.includeFontPadding = false
+
+        measureChildWithMargins(
+            image,
+            widthMeasureSpec,
+            image.marginTop,
+            heightMeasureSpec,
+            image.marginStart
+        )
+
+        measureChildWithMargins(
+            linearLayout,
+            widthMeasureSpec,
+            linearLayout.marginTop,
+            heightMeasureSpec,
+            image.maxWidth + linearLayout.marginStart + image.marginStart
+        )
+
         measureChildWithMargins(
             reactions,
             widthMeasureSpec,
@@ -72,16 +88,22 @@ class MessageViewGroup
 
         val totalWidth =
             paddingHorizontal + image.measuredWidth + maxOf(
-                reactions.measuredWidth + reactions.paddingStart + reactions.paddingEnd,
-                linearLayout.measuredWidth + linearLayout.paddingEnd + linearLayout.paddingStart
-            )
+                reactions.measuredWidth,
+                linearLayout.measuredWidth
+            ) + 16f.dp(context).toInt()
 
         val totalHeight =
             paddingVertical + maxOf(
                 image.measuredHeight,
                 linearLayout.measuredHeight + reactions.measuredHeight
-            )
+            ) + paddingVertical
         setMeasuredDimension(totalWidth, totalHeight)
+
+        Log.d("measuringViewGroup", "reactions ${reactions.measuredWidth} by ${reactions.measuredHeight}")
+        Log.d("measuringViewGroup", "image ${image.measuredWidth} by ${image.measuredHeight}")
+        Log.d("measuringViewGroup", "linearLayout ${linearLayout.measuredWidth} by ${linearLayout.measuredHeight}")
+        Log.d("measuringViewGroup", "message ${message.measuredWidth} by ${message.measuredHeight} and name ${name.measuredWidth} by ${name.measuredHeight}")
+        Log.d("measuringViewGroup", "${this.width} by ${this.height}")
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {

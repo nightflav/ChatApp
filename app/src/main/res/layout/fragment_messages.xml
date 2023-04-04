@@ -116,4 +116,14 @@
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/btn_tmp_refresh_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="update msgs"
+        app:layout_constraintBottom_toBottomOf="@+id/top_toolbar"
+        app:layout_constraintEnd_toEndOf="@+id/top_toolbar"
+        app:layout_constraintTop_toTopOf="@+id/top_toolbar" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

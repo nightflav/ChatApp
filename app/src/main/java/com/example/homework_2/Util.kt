@@ -2,8 +2,12 @@ package com.example.homework_2
 
 import android.content.Context
 import android.util.TypedValue
+import com.example.homework_2.models.UserProfile
+import com.example.homework_2.network.RetrofitInstance
+import com.example.homework_2.network.networkModels.users.Member
 import kotlinx.coroutines.CancellationException
-import java.time.LocalDate
+import retrofit2.Response
+import java.util.*
 
 suspend fun <R> runCatchingNonCancellation(block: suspend () -> R): Result<R> {
     return try {
@@ -33,21 +37,18 @@ fun Float.px(context: Context) = TypedValue.applyDimension(
     context.resources.displayMetrics
 )
 
-fun LocalDate.parseDate(): String {
-    val currDayOfMonth = this.dayOfMonth
-    val currMonth = when (this.month.value) {
-        0 -> "Jan"
-        1 -> "Feb"
-        2 -> "Mar"
-        3 -> "Apr"
-        4 -> "May"
-        5 -> "Jun"
-        6 -> "Jul"
-        7 -> "Aug"
-        8 -> "Spt"
-        9 -> "Oct"
-        10 -> "Nov"
-        else -> "Dec"
-    }
-    return "$currDayOfMonth $currMonth"
+fun Int.toDate(): String = Date(this*1000L).toInstant().toString()
+
+suspend fun Response<Member>.toUserProfile(): UserProfile? {
+    val member = body()
+    return if (this.isSuccessful && member != null) {
+        val currUserPresence = RetrofitInstance.chatApi.getUserPresence(member.email).body()
+        UserProfile(
+            fullName = member.full_name,
+            status = currUserPresence!!.presence.aggregated.status,
+            avatarSource = member.avatar_url
+                ?: "https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png",
+            email = member.email
+        )
+    } else null
 }

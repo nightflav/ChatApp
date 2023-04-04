@@ -26,10 +26,12 @@
             android:id="@+id/action_messagesFragment_to_channelsFragment"
             app:popUpTo="@id/channelsFragment"/>
         <argument
-            android:name="topicId"
+            android:name="streamId"
             app:argType="string" />
         <argument
-            android:name="streamId"
+            android:name="streamName"
+            app:argType="string" />
+        <argument android:name="topicName"
             app:argType="string" />
     </fragment>
     <fragment

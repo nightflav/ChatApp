@@ -1,25 +1,24 @@
 package com.example.homework_2
 
 import com.example.homework_2.datasource.MessageDatasource
-import com.example.homework_2.models.*
-import java.time.LocalDate
+import okhttp3.Credentials
 
-val contacts = listOf<UserProfile>(
-    UserProfile(
-        fullName = "Agatha Christie",
-        isActive = false,
-        meetingStatus = "Away for a bit...",
-        tmpProfilePhoto = R.drawable.tmp_agatha_christie,
-        email = "123@gmail.com"
-    ),
-    UserProfile(
-        fullName = "Arthur Conan Doyle",
-        isActive = true,
-        meetingStatus = "Looking for dinosaurs",
-        tmpProfilePhoto = R.drawable.tmp_arthur_conan_doyle,
-        email = "321@liamg.moc"
-    ),
-)
+const val USER_EMAIL = "iamsoalivenow@gmail.com"
+const val API_KEY = "wKUjjObJDaru9ErHEf9ryU3yZ7NFvikA"
+const val BASE_URL = "https://tinkoff-android-spring-2023.zulipchat.com/api/v1/"
+val AUTH_KEY: String = Credentials.basic(USER_EMAIL, API_KEY)
+
+object MessageTypes {
+    const val SENDER = "sender"
+    const val RECEIVER = "receiver"
+    const val DATA_SEPARATOR = "data separator"
+}
+
+object Status {
+    const val ACTIVE = "active"
+    const val IDLE = "idle"
+    const val OFFLINE = "offline"
+}
 
 val emojiSetNCS = listOf(
     MessageDatasource.EmojiNCS("grinning", "1f600"),
@@ -153,154 +152,3 @@ val emojiSetNCS = listOf(
     MessageDatasource.EmojiNCS("zzz", "1f4a4"),
 )
 
-val messagesMain = mutableListOf(
-    SingleMessage(
-        isDataSeparator = true,
-        date = LocalDate.now().parseDate()
-    ),
-    SingleMessage(
-        msg = "Hello!",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[0], 1, true)
-        ),
-        senderName = "Sender Name",
-        user_id = "user_2",
-        message_id = "0"
-    ),
-    SingleMessage(
-        msg = "Hi!",
-        senderName = "Receiver Name",
-        user_id = "user_1",
-        message_id = "1"
-    ),
-    SingleMessage(
-        msg = "How are you?",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[2], 3, false)
-        ),
-        senderName = "Sender Name",
-        user_id = "user_2",
-        message_id = "2"
-    ),
-    SingleMessage(
-        msg = "I'm fine, thanks!",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[3], 1, true)
-        ),
-        senderName = "Receiver Name",
-        user_id = "user_1",
-        message_id = "3"
-    ),
-    SingleMessage(
-        msg = "And you?",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[4], 6, true)
-        ),
-        senderName = "Sender Name",
-        user_id = "user_1",
-        message_id = "4"
-    ),
-    SingleMessage(
-        isDataSeparator = true,
-        date = LocalDate.ofYearDay(2023, 130).parseDate()
-    ),
-    SingleMessage(
-        msg = "Hello?",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[5], 1, false)
-        ),
-        senderName = "Sender Name",
-        user_id = "user_1",
-        message_id = "5"
-    ),
-    SingleMessage(
-        msg = "Ah, yeah... I just wanted to tell you \n" +
-                "Я вас любил: любовь еще, быть может,\n" +
-                "В душе моей угасла не совсем;\n" +
-                "Но пусть она вас больше не тревожит;\n" +
-                "Я не хочу печалить вас ничем.\n" +
-                "Я вас любил безмолвно, безнадежно,\n" +
-                "То робостью, то ревностью томим;\n" +
-                "Я вас любил так искренно, так нежно,\n" +
-                "Как дай вам Бог любимой быть другим.",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[9], 1, true)
-        ),
-        senderName = "Sender Name",
-        user_id = "user_2",
-        message_id = "6"
-    ),
-    SingleMessage(
-        msg = "Could you please never write me again?) Thanks, bye!..",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[22], 1, true)
-        ),
-        senderName = "Sender Name",
-        user_id = "user_1",
-        message_id = "7",
-        date = LocalDate.now().parseDate()
-    ),
-)
-
-val messagesWitcher = mutableListOf(
-    SingleMessage(
-        isDataSeparator = true,
-        date = LocalDate.now().parseDate()
-    ),
-    SingleMessage(
-        msg = "I love witcher!",
-        reactions = mutableListOf(
-            Reaction(emojiSetNCS[0], 1, true)
-        ),
-        senderName = "Sender Name",
-        user_id = "user_2",
-        message_id = "0"
-    )
-)
-
-val messages = mapOf(
-    "main" to messagesMain,
-    "geralt" to messagesWitcher,
-    "classic" to mutableListOf(),
-    "non classic" to mutableListOf()
-)
-
-val streams = listOf(
-    Stream(
-        isSubscribed = true,
-        name = "#general",
-        isSelected = false,
-        topics = listOf(
-            Topic(
-                name = "classic",
-                msgCount = 100,
-                parentId = "general",
-                id = "classic"
-            ),
-            Topic(
-                name = "not classic",
-                msgCount = 1000,
-                parentId = "general",
-                id = "non classic"
-            )
-        ),
-        id = "general"
-    ),
-    Stream(
-        name = "#abc",
-        topics = listOf(Topic(name = "main", msgCount = 5, parentId = "abc", id = "main")),
-        id = "abc"
-    ),
-    Stream(
-        name = "#witcher",
-        topics = listOf(
-            Topic(
-                name = "Geralt",
-                msgCount = 999,
-                parentId = "witcher",
-                id = "geralt"
-            )
-        ),
-        id = "witcher"
-    )
-)

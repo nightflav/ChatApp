@@ -2,6 +2,7 @@ package com.example.homework_2.screens.message
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,31 +23,34 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.homework_2.R
 import com.example.homework_2.databinding.FragmentMessagesBinding
 import com.example.homework_2.datasource.MessageDatasource
-import com.example.homework_2.datasource.StreamDatasource
 import com.example.homework_2.dp
 import com.example.homework_2.emojiSetNCS
-import com.example.homework_2.messages
-import com.example.homework_2.models.Reaction
-import com.example.homework_2.models.SingleMessage
+import com.example.homework_2.models.MessageReaction
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 class MessagesFragment : Fragment() {
 
-
     private val args: MessagesFragmentArgs by navArgs()
-    private val topicId by lazy {
-        args.topicId
-    }
-
-    private val viewModel: MessagesViewModel by viewModels {
-        MessagesViewModel.Factory(topicId)
-    }
 
     private val streamId by lazy {
         args.streamId
+    }
+    private val topicName by lazy {
+        Log.d("findingTopicName", args.topicName)
+        args.topicName
+    }
+    private val streamName by lazy {
+        args.streamName
+    }
+
+    private val viewModel: MessagesViewModel by viewModels {
+        MessagesViewModel.Factory(
+            topicName = topicName,
+            streamId = streamId,
+            streamName = streamName
+        )
     }
 
     private lateinit var msgAdapter: MessageAdapter
@@ -64,8 +68,16 @@ class MessagesFragment : Fragment() {
         msgAdapter = MessageAdapter(
             { msgId -> getReaction(msgId, context) },
             context,
-            topicId
+            topicName,
+            { reaction, msgId ->
+                setReactionOnClickListener(reaction, msgId)
+            }
         )
+
+        binding.btnTmpRefreshMessages.setOnClickListener {
+            viewModel.updateMessages()
+        }
+
         setupToolbar()
         initRecyclerView()
 
@@ -79,6 +91,11 @@ class MessagesFragment : Fragment() {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun setupToolbar() {
         binding.ivToolbarBack.setOnClickListener {
             val action = MessagesFragmentDirections.actionMessagesFragmentToChannelsFragment()
@@ -86,15 +103,9 @@ class MessagesFragment : Fragment() {
         }
         binding.tvStreamName.text = getString(
             R.string.stream_name,
-            StreamDatasource.getStreamById(streamId)?.name ?: "null"
+            streamName
         )
-        binding.tvTopicName.text =
-            getString(R.string.topic_name, StreamDatasource.getTopicById(topicId)?.name ?: "null")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+        binding.tvTopicName.text = topicName
     }
 
     private fun initRecyclerView() {
@@ -105,14 +116,11 @@ class MessagesFragment : Fragment() {
         (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
     }
 
-    private fun setMessageOnClickListener(
-        msgAdapter: MessageAdapter,
-        reaction: Reaction,
+    private fun setReactionOnClickListener(
+        reaction: MessageReaction,
         msgId: String
     ) {
-        MessageDatasource.addReaction(reaction, msgId, topicId)
-        msgAdapter.notifyItemChanged(viewModel.messages.map { it.message_id }
-            .indexOf(msgId))
+        viewModel.setReactionOnMessage(msgId, reaction)
     }
 
     private fun getReaction(msgId: String, context: Context) {
@@ -125,9 +133,8 @@ class MessagesFragment : Fragment() {
             bottomSheetDialog = BottomSheetDialog(context, R.style.BottomSheetDialogTheme)
             val rvEmojis = dialogLayout.findViewById<RecyclerView>(R.id.rv_emoji_bsd)
             val emojiAdapter = EmojiAdapter(MessageDatasource.getEmojis()) {
-                setMessageOnClickListener(
-                    msgAdapter = msgAdapter,
-                    reaction = Reaction(
+                setReactionOnClickListener(
+                    reaction = MessageReaction(
                         emojiSetNCS[MessageDatasource.getEmojis().indexOf(it)],
                         1,
                         true
@@ -146,15 +153,8 @@ class MessagesFragment : Fragment() {
 
     private fun setSendButtonOnClickListener() {
         binding.btnSend.setOnClickListener {
-            if (binding.etMessage.text?.isNotEmpty() == true) {
-                val newMsg = SingleMessage(
-                    msg = binding.etMessage.text.toString(),
-                    reactions = mutableListOf(),
-                    user_id = "user_1",
-                    senderName = "Yaroslav",
-                    message_id = (messages.size + 1).toString()
-                )
-                lifecycleScope.launch { viewModel.newSentMessage.emit(newMsg) }
+            if (binding.etMessage.text!!.isNotEmpty()) {
+                viewModel.sendMessage(binding.etMessage.text.toString())
                 binding.etMessage.text!!.clear()
             }
         }

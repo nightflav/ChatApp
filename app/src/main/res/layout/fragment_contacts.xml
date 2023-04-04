@@ -77,8 +77,11 @@
             android:orientation="vertical">
 
             <include layout="@layout/shimmer_contact_layout" />
+
             <include layout="@layout/shimmer_contact_layout" />
+
             <include layout="@layout/shimmer_contact_layout" />
+
             <include layout="@layout/shimmer_contact_layout" />
 
         </LinearLayout>

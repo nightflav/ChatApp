@@ -2,6 +2,7 @@ package com.example.homework_2.screens.stream
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +28,7 @@ class StreamFragment : Fragment() {
     private val streamAdapter: StreamAdapter by lazy {
         StreamAdapter(requireContext(), findNavController()) {
             lifecycleScope.launch {
-                viewModel.openTopicState.emit(it)
+                viewModel.renewTopics(it)
             }
         }
     }
@@ -39,13 +40,14 @@ class StreamFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         _binding = FragmentChannelsBinding.inflate(inflater, container, false)
         val context = requireContext()
         initSearch()
         initRecyclerView(context)
         initTabView()
 
-        viewModel.searchState
+        viewModel.screenState
             .flowWithLifecycle(lifecycle)
             .onEach(::render)
             .launchIn(lifecycleScope)
@@ -53,24 +55,50 @@ class StreamFragment : Fragment() {
         return binding.root
     }
 
-    override fun onStart() {
-        lifecycleScope.launch {
-            viewModel.subscribedListState.emit(true)
-        }
-        super.onStart()
-    }
-
     private fun initSearch() {
         binding.etChannelsSearch.addTextChangedListener {
             lifecycleScope.launch {
                 it?.let {
-                    viewModel.searchRequestState.emit(it.toString())
+                    val request = it.toString()
+                    viewModel.searchForStream(request = request)
                 }
             }
         }
     }
 
+    private fun initTabView() {
+        val selectedTabIndex = if (viewModel.showSubscribed) 0 else 1
+        binding.tlSelectChannel.getTabAt(selectedTabIndex)?.select()
+        binding.tlSelectChannel.addOnTabSelectedListener(getTabListener())
+    }
+
+    private fun getTabListener() =
+        object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                val showSubs = tab?.position == 0
+                lifecycleScope.launch {
+                    viewModel.showSubscribed = showSubs
+                    viewModel.refresh()
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        }
+
+    private fun initRecyclerView(context: Context) {
+        binding.rvStreams.adapter = streamAdapter
+        val rvLayoutManager = LinearLayoutManager(context)
+        rvLayoutManager.generateDefaultLayoutParams()
+        binding.rvStreams.layoutManager = rvLayoutManager
+        (binding.rvStreams.itemAnimator as SimpleItemAnimator).supportsChangeAnimations =
+            false
+
+    }
+
     private fun render(state: StreamScreenState) {
+        Log.d("looking for error", "rendering screen with $state")
         when (state) {
             StreamScreenState.Error -> {
                 binding.apply {
@@ -96,35 +124,5 @@ class StreamFragment : Fragment() {
                 }
             }
         }
-    }
-
-    private fun initTabView() {
-        val selectedTabIndex = if (!viewModel.subscribedListState.value) 0 else 1
-        binding.tlSelectChannel.getTabAt(selectedTabIndex)?.select()
-        binding.tlSelectChannel.addOnTabSelectedListener(getTabListener())
-    }
-
-    private fun getTabListener() =
-        object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                val showSubs = tab?.position == 0
-                lifecycleScope.launch {
-                    viewModel.subscribedListState.emit(showSubs)
-                }
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        }
-
-    private fun initRecyclerView(context: Context) {
-        binding.rvStreams.adapter = streamAdapter
-        val rvLayoutManager = LinearLayoutManager(context)
-        rvLayoutManager.generateDefaultLayoutParams()
-        binding.rvStreams.layoutManager = rvLayoutManager
-        (binding.rvStreams.itemAnimator as SimpleItemAnimator).supportsChangeAnimations =
-            false
-
     }
 }

@@ -1,6 +1,7 @@
 package com.example.homework_2.screens.message
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,10 +11,11 @@ import android.widget.TextView
 import androidx.core.view.children
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.homework_2.MessageTypes.SENDER
 import com.example.homework_2.R
-import com.example.homework_2.datasource.MessageDatasource
+import com.example.homework_2.datasource.MessageDatasource.getReactions
 import com.example.homework_2.dp
-import com.example.homework_2.models.Reaction
+import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.models.SingleMessage
 import com.example.homework_2.views.EmojiView
 import com.example.homework_2.views.MessageViewGroup
@@ -22,7 +24,8 @@ import com.example.homework_2.views.ReactionsViewGroup
 class MessageAdapter(
     private val getReaction: (String) -> Unit,
     private val context: Context,
-    private val topicId: String
+    private val topicName: String,
+    private val onReactionClickListener: (MessageReaction, String) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var messages: List<SingleMessage> = emptyList()
@@ -36,7 +39,7 @@ class MessageAdapter(
     override fun getItemViewType(position: Int): Int {
         val message = messages[position]
         return if (!message.isDataSeparator) {
-            if (message.user_id == "user_1") SENDER_TYPE
+            if (message.user_id == SENDER) SENDER_TYPE
             else RECEIVER_TYPE
         } else SEPARATOR_TYPE
     }
@@ -90,18 +93,18 @@ class MessageAdapter(
 
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
+            Log.d("findingTopicName", "topic name at bind is $topicName}")
             msgVg.reactions.setMaxSpace(277f.dp(context).toInt())
-            if (MessageDatasource.getReactions(msgId, topicId)
-                    .isEmpty()
-            ) msgVg.reactions.visibility =
-                View.GONE
-            else msgVg.reactions.visibility = View.VISIBLE
-            msgVg.reactions.addReactions(MessageDatasource.getReactions(msgId, topicId)) {
-                MessageDatasource.changeReactionSelectedState(
-                    msgId = msgId, reaction = it.reaction, topicId = topicId
-                )
+            if (getReactions(msgId, topicName).isEmpty())
+                msgVg.reactions.visibility = View.GONE
+            else
+                msgVg.reactions.visibility = View.VISIBLE
+
+            msgVg.reactions.addReactions(getReactions(msgId, topicName)) {
+                onReactionClickListener(it, msgId)
                 notifyItemChanged(messages.map { msg -> msg.message_id }.indexOf(msgId))
             }
+            
             msgVg.name.text = msg.senderName
             msgVg.message.text = msg.msg
             msgVg.setOnLongClickListener {
@@ -124,13 +127,11 @@ class MessageAdapter(
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
             msgSent.text = msg.msg
-            reactionsSent.addReactions(MessageDatasource.getReactions(msgId, topicId)) {
-                MessageDatasource.changeReactionSelectedState(
-                    reaction = it.reaction, msgId = msgId, topicId
-                )
+            reactionsSent.addReactions(getReactions(msgId, topicName)) {
+                onReactionClickListener(it, msgId)
                 notifyItemChanged(messages.map { msg -> msg.message_id }.indexOf(msgId))
             }
-            if (MessageDatasource.getReactions(msgId, topicId).isEmpty()) reactionsSent.visibility =
+            if (getReactions(msgId, topicName).isEmpty()) reactionsSent.visibility =
                 View.GONE
             else reactionsSent.visibility = View.VISIBLE
 
@@ -145,7 +146,7 @@ class MessageAdapter(
     }
 
     private fun ReactionsViewGroup.addReactions(
-        reactions: List<Reaction>, onReactionClickListener: (Reaction) -> Unit
+        reactions: List<MessageReaction>, onReactionClickListener: (MessageReaction) -> Unit
     ) {
         while (this.childCount != 1) for (child in this.children) if (child is EmojiView) this.removeView(
             child
@@ -193,7 +194,7 @@ class MessageAdapter(
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val item1 = oldList[oldItemPosition]
             val item2 = newList[newItemPosition]
-            return item1 == item2
+            return item1 == item2 && item1.reactions == item2.reactions
         }
     }
 }

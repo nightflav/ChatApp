@@ -10,6 +10,7 @@
     <color name="light_light_gray_text">#CCCCCC</color>
     <color name="online_status">#4AB54D</color>
     <color name="offline_status">#EB4034</color>
+    <color name="idle_status">#EB9034</color>
     <color name="primary_variant">#1E1E1E</color>
     <color name="light_light_dark">#282828</color>
     <color name="topic_background">#1C1C1C</color>

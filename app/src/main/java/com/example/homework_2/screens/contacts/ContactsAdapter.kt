@@ -6,19 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.homework_2.R
+import com.example.homework_2.Status
 import com.example.homework_2.models.UserProfile
 
-class ContactsAdapter(private val context: Context) : RecyclerView.Adapter<ContactsAdapter.ContactViewHolder>() {
+class ContactsAdapter(private val context: Context) :
+    RecyclerView.Adapter<ContactsAdapter.ContactViewHolder>() {
 
     private var dataList: List<UserProfile> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.contact_layout, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.contact_layout, parent, false)
         return ContactViewHolder(view)
     }
 
@@ -35,16 +38,14 @@ class ContactsAdapter(private val context: Context) : RecyclerView.Adapter<Conta
         private val email = itemView.findViewById<TextView>(R.id.tv_contact_card_email)
 
         fun bind(profile: UserProfile) {
-            val isActiveStatusColor = if(profile.isActive)
-                context.resources.getColor(R.color.online_status, context.theme)
-            else
-                context.resources.getColor(R.color.offline_status, context.theme)
+            val isActiveStatusColor = when (profile.status) {
+                Status.ACTIVE -> context.resources.getColor(R.color.online_status, context.theme)
+                Status.OFFLINE -> context.resources.getColor(R.color.offline_status, context.theme)
+                Status.IDLE -> context.resources.getColor(R.color.idle_status, context.theme)
+                else -> throw IllegalStateException()
+            }
             activeStatus.setCardBackgroundColor(isActiveStatusColor)
-            profileImage.setImageDrawable(profile.tmpProfilePhoto?.let {
-                AppCompatResources.getDrawable(context,
-                    it
-                )
-            })
+            Glide.with(profileImage).load(profile.avatarSource).into(profileImage)
             name.text = profile.fullName
             email.text = profile.email
         }

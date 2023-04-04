@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:background="@color/transparent"
     app:shimmer_auto_start="true"
-    app:shimmer_duration="4500">
+    app:shimmer_duration="4500"
+    android:paddingBottom="16dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -40,21 +41,23 @@
             app:layout_constraintStart_toEndOf="@id/cv_helper_profile_photo"
             app:layout_constraintTop_toTopOf="@id/cv_helper_profile_photo">
 
-            <TextView
+            <ImageView
                 android:id="@+id/tv_contact_card_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="124dp"
+                android:layout_height="24sp"
                 android:layout_marginBottom="4dp"
-                android:textSize="24sp"
-                tools:text="123" />
+                android:background="@color/contacts_card_text"
+                android:importantForAccessibility="no" />
 
-            <TextView
+            <ImageView
                 android:id="@+id/tv_contact_card_email"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="124dp"
+                android:layout_height="14sp"
                 android:textColor="@color/contacts_card_text"
                 android:textSize="16sp"
-                tools:text="123" />
+                tools:text="123"
+                android:background="@color/contacts_card_text"
+                android:importantForAccessibility="no"/>
 
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
