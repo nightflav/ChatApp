@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.core.content.res.ResourcesCompat
@@ -51,7 +50,6 @@ class EmojiView @JvmOverloads constructor(
         context.withStyledAttributes(attrs, R.styleable.EmojiView) {
             emoji = this.getString(R.styleable.EmojiView_emoji) ?: ""
             count = this.getInt(R.styleable.EmojiView_count, 1)
-            Log.d("MyTag", reactToShow)
         }
     }
 

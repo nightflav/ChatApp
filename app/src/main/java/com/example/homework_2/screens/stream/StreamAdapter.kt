@@ -1,7 +1,6 @@
 package com.example.homework_2.screens.stream
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,7 +43,6 @@ class StreamAdapter(
     override fun getItemCount(): Int = dataList.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        Log.d("1231231234", "onBind ${dataList[position]}")
         when (holder) {
             is StreamViewHolder -> {
                 holder.bind(dataList[position] as Stream)
@@ -113,7 +111,6 @@ class StreamAdapter(
             itemView.setOnClickListener {
                 onStreamClickListener(stream)
             }
-            Log.d("1231231234", "bind $stream")
             val imageToShow = if (stream.isSelected)
                 AppCompatResources.getDrawable(context, R.drawable.ic_close_arrow)
             else
@@ -129,7 +126,6 @@ class StreamAdapter(
         private val topicMsgCount = itemView.findViewById<TextView>(R.id.topic_msg_count)
 
         fun bind(topic: Topic) {
-            Log.d("1231231234", "$topic")
             topicName.text = topic.name
             topicMsgCount.text = topic.msgCount.toString()
             when (topic.msgCount) {
@@ -155,7 +151,6 @@ class StreamAdapter(
                 else -> itemView.setBackgroundColor(getColor(context, R.color.color_range_501_inf))
             }
             itemView.setOnClickListener {
-                Log.d("findingTopicName", topic.name)
                 val action =
                     StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
                         topicId = topic.id,

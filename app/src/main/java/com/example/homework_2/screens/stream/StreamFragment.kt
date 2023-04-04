@@ -2,7 +2,6 @@ package com.example.homework_2.screens.stream
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -98,7 +97,6 @@ class StreamFragment : Fragment() {
     }
 
     private fun render(state: StreamScreenState) {
-        Log.d("looking for error", "rendering screen with $state")
         when (state) {
             StreamScreenState.Error -> {
                 binding.apply {

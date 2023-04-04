@@ -2,7 +2,6 @@ package com.example.homework_2.screens.message
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,7 +37,6 @@ class MessagesFragment : Fragment() {
         args.streamId
     }
     private val topicName by lazy {
-        Log.d("findingTopicName", args.topicName)
         args.topicName
     }
     private val streamName by lazy {

@@ -1,6 +1,5 @@
 package com.example.homework_2.datasource
 
-import android.util.Log
 import com.example.homework_2.models.Stream
 import com.example.homework_2.models.Topic
 import com.example.homework_2.network.RetrofitInstance.Companion.chatApi
@@ -21,7 +20,6 @@ object StreamDatasource {
     private suspend fun loadStreams() {
         val resultStreams = mutableListOf<Stream>()
         val streamsNetwork = chatApi.getStreams().body()?.streams ?: emptyList()
-        Log.d("testestest", "$streamsNetwork")
         for (stream in streamsNetwork) {
             val currStream = Stream(
                 name = stream.name,

@@ -1,6 +1,5 @@
 package com.example.homework_2.datasource
 
-import android.util.Log
 import androidx.core.text.HtmlCompat
 import androidx.core.text.HtmlCompat.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH
 import com.example.homework_2.MessageTypes.RECEIVER
@@ -13,7 +12,7 @@ import com.example.homework_2.models.SingleMessage
 import com.example.homework_2.network.RetrofitInstance.Companion.chatApi
 import com.example.homework_2.network.narrow.NarrowItem
 import com.example.homework_2.network.networkModels.messages.Reaction
-import java.util.*
+import com.example.homework_2.toDate
 
 object MessageDatasource {
     data class EmojiNCS(
@@ -51,11 +50,9 @@ object MessageDatasource {
             numBefore = 100,
             numAfter = 0
         )
-        Log.d("testestest", "${messagesNetwork.body()?.messages}")
 
         if (messagesNetwork.isSuccessful)
             for (msg in messagesNetwork.body()!!.messages) {
-                Log.d("testestest", "${msg.content} and ${msg.reactions}")
                 resultMessages.add(
                     SingleMessage(
                         senderName = msg.sender_full_name,
@@ -76,8 +73,8 @@ object MessageDatasource {
     }
 
     private suspend fun getMsgTypeId(senderId: Int): String {
-        val user = getProfile().body()
-        return when (user?.user_id) {
+        val user = getProfile()
+        return when (user.body()?.user_id) {
             senderId -> SENDER
             else -> RECEIVER
         }
@@ -97,9 +94,6 @@ object MessageDatasource {
 
     fun getReactions(msgId: String, topicName: String): List<MessageReaction> {
         val message = messagesByTopic[topicName]?.first { it.message_id == msgId }
-        Log.d("reactionAdd", "message is $message")
-        Log.d("reactionAdd", "topicName is $topicName")
-        Log.d("reactionAdd", "sgByTopic is ${messagesByTopic.keys} to ${messagesByTopic.values}")
         return message?.reactions ?: emptyList()
     }
 
@@ -119,10 +113,8 @@ object MessageDatasource {
 
 }
 
-private fun Int.toDate(): String = Date(this * 1000L).toString()
-
 private suspend fun List<Reaction>.toReactionList(): MutableList<MessageReaction> {
-    val user = getProfile().body()
+    val user = getProfile()
     val resultReactions = mutableListOf<MessageReaction>()
 
     for (react in this) {
@@ -132,15 +124,15 @@ private suspend fun List<Reaction>.toReactionList(): MutableList<MessageReaction
                 code = react.emoji_code
             ),
             count = 1,
-            isSelected = react.user_id == user?.user_id
+            isSelected = react.user_id == user.body()?.user_id
         )
-        if(msgReaction.reaction.name !in resultReactions.map { it.reaction.name })
+        if (msgReaction.reaction.name !in resultReactions.map { it.reaction.name })
             resultReactions.add(msgReaction)
         else {
             val reactInResult = resultReactions.first { it.reaction.name == react.emoji_name }
             reactInResult.count++
-            if(!reactInResult.isSelected)
-                reactInResult.isSelected = react.user_id == user?.user_id
+            if (!reactInResult.isSelected)
+                reactInResult.isSelected = react.user_id == user.body()?.user_id
         }
     }
 

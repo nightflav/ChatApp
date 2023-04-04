@@ -2,7 +2,6 @@ package com.example.homework_2.views
 
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -98,12 +97,6 @@ class MessageViewGroup
                 linearLayout.measuredHeight + reactions.measuredHeight
             ) + paddingVertical
         setMeasuredDimension(totalWidth, totalHeight)
-
-        Log.d("measuringViewGroup", "reactions ${reactions.measuredWidth} by ${reactions.measuredHeight}")
-        Log.d("measuringViewGroup", "image ${image.measuredWidth} by ${image.measuredHeight}")
-        Log.d("measuringViewGroup", "linearLayout ${linearLayout.measuredWidth} by ${linearLayout.measuredHeight}")
-        Log.d("measuringViewGroup", "message ${message.measuredWidth} by ${message.measuredHeight} and name ${name.measuredWidth} by ${name.measuredHeight}")
-        Log.d("measuringViewGroup", "${this.width} by ${this.height}")
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {

@@ -10,6 +10,7 @@ import com.example.homework_2.datasource.MessageDatasource.removeReaction
 import com.example.homework_2.datasource.MessageDatasource.sendReaction
 import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.models.SingleMessage
+import com.example.homework_2.parseDate
 import com.example.homework_2.runCatchingNonCancellation
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ class MessagesViewModel(
     private val streamId: String
 ) : ViewModel() {
 
-    class Factory (
+    class Factory(
         private val topicName: String,
         private val streamName: String,
         private val streamId: String
@@ -48,17 +49,17 @@ class MessagesViewModel(
             _screenState.emit(MessageScreenState.Loading)
             getMessagesByTopic(topicName, streamName)
         }.getOrNull()
+        messages = result?.addDateSeparators()
 
-        messages = result
 
-        return result?.let { MessageScreenState.Data(it) }
+        return messages?.let { MessageScreenState.Data(it) }
             ?: MessageScreenState.Error
     }
 
     fun setReactionOnMessage(msgId: String, reaction: MessageReaction) {
         val reactionName = reaction.reaction.name
         viewModelScope.launch {
-            if(reaction.isSelected)
+            if (reaction.isSelected)
                 removeReaction(msgId, reactionName)
             else
                 sendReaction(msgId, reactionName)
@@ -81,6 +82,36 @@ class MessagesViewModel(
             loadMessagesByTopic(topicName, streamName)
             _screenState.emit(showMessages())
         }
+    }
+
+    private fun List<SingleMessage>?.addDateSeparators(): List<SingleMessage>? {
+        if (this == null || this.isEmpty()) return null
+
+        val resultMessages = mutableListOf<SingleMessage>()
+
+        var prevDate = this.first().date
+        resultMessages.add(
+            SingleMessage(
+                date = prevDate.parseDate(),
+                isDataSeparator = true
+            )
+        )
+
+        for (msg in this) {
+            val thisMsgDate = msg.date
+            if (thisMsgDate > prevDate) {
+                resultMessages.add(
+                    SingleMessage(
+                        date = thisMsgDate.parseDate(),
+                        isDataSeparator = true
+                    )
+                )
+                prevDate = thisMsgDate
+            }
+            resultMessages.add(msg)
+        }
+
+        return resultMessages
     }
 
 }

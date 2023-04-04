@@ -1,16 +1,21 @@
 package com.example.homework_2.datasource
 
-import com.example.homework_2.R
-import com.example.homework_2.Status.ACTIVE
 import com.example.homework_2.models.UserProfile
 import com.example.homework_2.network.RetrofitInstance.Companion.chatApi
+import com.example.homework_2.network.networkModels.users.Member
 import kotlinx.coroutines.delay
+import retrofit2.Response
 
 object ProfilesDatasource {
 
     private var contacts: List<UserProfile> = emptyList()
+    private var profile: Response<Member>? = null
 
-    suspend fun getProfile() = chatApi.getProfile()
+    suspend fun getProfile(): Response<Member> {
+        if(profile == null)
+            profile = chatApi.getProfile()
+        return profile!!
+    }
 
     suspend fun getContacts(): List<UserProfile> {
         val resultMembers = mutableListOf<UserProfile>()

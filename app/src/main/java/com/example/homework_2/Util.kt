@@ -7,6 +7,7 @@ import com.example.homework_2.network.RetrofitInstance
 import com.example.homework_2.network.networkModels.users.Member
 import kotlinx.coroutines.CancellationException
 import retrofit2.Response
+import java.time.ZoneId
 import java.util.*
 
 suspend fun <R> runCatchingNonCancellation(block: suspend () -> R): Result<R> {
@@ -37,7 +38,28 @@ fun Float.px(context: Context) = TypedValue.applyDimension(
     context.resources.displayMetrics
 )
 
-fun Int.toDate(): String = Date(this*1000L).toInstant().toString()
+fun Int.toDate(): String =
+    Date(this * 1000L).toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()
+
+fun String.parseDate(): String {
+    val day = this.drop(8)
+    val month = when(this.drop(5).dropLast(3)) {
+        "01" -> "Jan"
+        "02" -> "Feb"
+        "03" -> "Mar"
+        "04" -> "Apr"
+        "05" -> "May"
+        "06" -> "Jun"
+        "07" -> "Jul"
+        "08" -> "Aug"
+        "09" -> "Sep"
+        "10" -> "Oct"
+        "11" -> "Nov"
+        "12" -> "Dec"
+        else -> "what is this month?"
+    }
+    return "$day $month"
+}
 
 suspend fun Response<Member>.toUserProfile(): UserProfile? {
     val member = body()

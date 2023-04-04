@@ -1,7 +1,6 @@
 package com.example.homework_2.screens.message
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -93,7 +92,6 @@ class MessageAdapter(
 
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
-            Log.d("findingTopicName", "topic name at bind is $topicName}")
             msgVg.reactions.setMaxSpace(277f.dp(context).toInt())
             if (getReactions(msgId, topicName).isEmpty())
                 msgVg.reactions.visibility = View.GONE
