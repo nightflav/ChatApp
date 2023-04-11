@@ -1,7 +1,8 @@
 package com.example.homework_2.network.networkModels.subscriptions
 
+import com.squareup.moshi.Json
+
 data class SubscriptionsResponse(
-    val msg: String,
-    val result: String,
+    @Json(name = "subscriptions")
     val subscriptions: List<Subscription>
 )

@@ -11,7 +11,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.content.withStyledAttributes
 import com.example.homework_2.R
-import com.example.homework_2.sp
+import com.example.homework_2.utils.sp
 
 class EmojiView @JvmOverloads constructor(
     context: Context,

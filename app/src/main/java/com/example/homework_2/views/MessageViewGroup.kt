@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.*
 import com.example.homework_2.R
-import com.example.homework_2.dp
+import com.example.homework_2.utils.dp
 
 class MessageViewGroup
 @JvmOverloads constructor(

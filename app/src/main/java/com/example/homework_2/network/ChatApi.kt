@@ -8,6 +8,8 @@ import com.example.homework_2.network.networkModels.topics.TopicsResponse
 import com.example.homework_2.network.networkModels.users.Member
 import com.example.homework_2.network.networkModels.users.UsersResponse
 import com.example.homework_2.network.networkModels.users.presence.UserPresenceResponse
+import com.example.homework_2.network.networkModels.users.presence.allUsersPresence.AllUsersPresenceResponse
+import com.example.homework_2.utils.Network.AUTH_KEY
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -39,6 +41,11 @@ interface ChatApi {
         @Path("user_id_or_email") userId: String,
         @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<UserPresenceResponse>
+
+    @GET("realm/presence")
+    suspend fun getAllUsersPresence(
+        @Header("Authorization") authKey: String = AUTH_KEY,
+    ): Response<AllUsersPresenceResponse>
 
     @GET("users/me")
     suspend fun getProfile(

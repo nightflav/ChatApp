@@ -6,6 +6,5 @@ sealed class ContactsScreenState {
     object Error : ContactsScreenState()
     object Loading : ContactsScreenState()
     object Init : ContactsScreenState()
-    class Profiles(val profiles: List<UserProfile>) : ContactsScreenState()
+    class Success(val profiles: List<UserProfile>) : ContactsScreenState()
 }
-

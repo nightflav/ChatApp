@@ -1,7 +1,8 @@
 package com.example.homework_2.network.networkModels.streams
 
+import com.squareup.moshi.Json
+
 data class StreamsResponse(
-    val msg: String,
-    val result: String,
+    @Json(name = "streams")
     val streams: List<Stream>
 )

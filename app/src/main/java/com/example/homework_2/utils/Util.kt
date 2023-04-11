@@ -1,23 +1,39 @@
-package com.example.homework_2
+package com.example.homework_2.utils
 
 import android.content.Context
 import android.util.TypedValue
-import com.example.homework_2.models.UserProfile
-import com.example.homework_2.network.RetrofitInstance
-import com.example.homework_2.network.networkModels.users.Member
-import kotlinx.coroutines.CancellationException
-import retrofit2.Response
+import com.example.homework_2.models.SingleMessage
 import java.time.ZoneId
 import java.util.*
 
-suspend fun <R> runCatchingNonCancellation(block: suspend () -> R): Result<R> {
-    return try {
-        Result.success(block())
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        Result.failure(e)
+fun List<SingleMessage>?.addDateSeparators(): List<SingleMessage>? {
+    if (this == null || this.isEmpty()) return null
+
+    val resultMessages = mutableListOf<SingleMessage>()
+
+    var prevDate = this.first().date
+    resultMessages.add(
+        SingleMessage(
+            date = prevDate.parseDate(),
+            isDataSeparator = true
+        )
+    )
+
+    for (msg in this) {
+        val thisMsgDate = msg.date
+        if (thisMsgDate > prevDate) {
+            resultMessages.add(
+                SingleMessage(
+                    date = thisMsgDate.parseDate(),
+                    isDataSeparator = true
+                )
+            )
+            prevDate = thisMsgDate
+        }
+        resultMessages.add(msg)
     }
+
+    return resultMessages
 }
 
 fun Float.sp(context: Context) = TypedValue.applyDimension(
@@ -59,18 +75,4 @@ fun String.parseDate(): String {
         else -> "what is this month?"
     }
     return "$day $month"
-}
-
-suspend fun Response<Member>.toUserProfile(): UserProfile? {
-    val member = body()
-    return if (this.isSuccessful && member != null) {
-        val currUserPresence = RetrofitInstance.chatApi.getUserPresence(member.email).body()
-        UserProfile(
-            fullName = member.full_name,
-            status = currUserPresence!!.presence.aggregated.status,
-            avatarSource = member.avatar_url
-                ?: "https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png",
-            email = member.email
-        )
-    } else null
 }

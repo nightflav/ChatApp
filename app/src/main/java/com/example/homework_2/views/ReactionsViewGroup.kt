@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.core.content.withStyledAttributes
 import androidx.core.view.children
 import com.example.homework_2.R
-import com.example.homework_2.px
+import com.example.homework_2.utils.px
 
 class ReactionsViewGroup @JvmOverloads constructor(
     context: Context,

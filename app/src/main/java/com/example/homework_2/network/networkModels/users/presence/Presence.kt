@@ -1,6 +1,8 @@
 package com.example.homework_2.network.networkModels.users.presence
 
+import com.squareup.moshi.Json
+
 data class Presence(
-    val aggregated: Aggregated,
-    val website: Website
+    @Json(name = "aggregated")
+    val aggregated: Aggregated
 )

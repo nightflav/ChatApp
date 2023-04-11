@@ -38,8 +38,13 @@ class ContactsFragment : Fragment() {
         binding.rvContacts.layoutManager = LinearLayoutManager(context)
         binding.rvContacts.adapter = contactsAdapter
         initSearch()
+        lifecycleScope.launch {
+            viewModel.contactsChannel.send(
+                ContactsIntents.InitContacts
+            )
+        }
 
-        viewModel.searchState
+        viewModel.screenState
             .flowWithLifecycle(lifecycle)
             .onEach(::render)
             .launchIn(lifecycleScope)
@@ -51,7 +56,8 @@ class ContactsFragment : Fragment() {
         binding.etUsersSearch.addTextChangedListener {
             lifecycleScope.launch {
                 it?.let {
-                    viewModel.searchRequestState.emit(it.toString())
+                    viewModel.contactsChannel
+                        .send(ContactsIntents.SearchForUserIntent(request = it.toString()))
                 }
             }
         }
@@ -66,7 +72,7 @@ class ContactsFragment : Fragment() {
                     rvContacts.isVisible = false
                 }
             }
-            is ContactsScreenState.Profiles -> {
+            is ContactsScreenState.Success -> {
                 binding.apply {
                     tvErrorStreams.isVisible = false
                     shimmerContacts.isVisible = false

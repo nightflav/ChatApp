@@ -21,13 +21,14 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.homework_2.R
 import com.example.homework_2.databinding.FragmentMessagesBinding
-import com.example.homework_2.datasource.MessageDatasource
-import com.example.homework_2.dp
-import com.example.homework_2.emojiSetNCS
 import com.example.homework_2.models.MessageReaction
+import com.example.homework_2.utils.Emojis.getEmojis
+import com.example.homework_2.utils.dp
+import com.example.homework_2.utils.emojiSetNCS
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class MessagesFragment : Fragment() {
 
@@ -73,11 +74,15 @@ class MessagesFragment : Fragment() {
         )
 
         binding.btnTmpRefreshMessages.setOnClickListener {
-            viewModel.updateMessages()
+            lifecycleScope.launch {
+                viewModel.messagesChannel.send(MessagesIntents.UpdateMessagesIntent)
+            }
         }
-
         setupToolbar()
         initRecyclerView()
+        lifecycleScope.launch {
+            viewModel.messagesChannel.send(MessagesIntents.InitMessagesIntent)
+        }
 
         viewModel.screenState
             .flowWithLifecycle(lifecycle)
@@ -118,7 +123,14 @@ class MessagesFragment : Fragment() {
         reaction: MessageReaction,
         msgId: String
     ) {
-        viewModel.setReactionOnMessage(msgId, reaction)
+        lifecycleScope.launch {
+            viewModel.messagesChannel.send(
+                MessagesIntents.ChangeReactionStateIntent(
+                    reaction = reaction,
+                    msgId = msgId
+                )
+            )
+        }
     }
 
     private fun getReaction(msgId: String, context: Context) {
@@ -130,12 +142,12 @@ class MessagesFragment : Fragment() {
                 )
             bottomSheetDialog = BottomSheetDialog(context, R.style.BottomSheetDialogTheme)
             val rvEmojis = dialogLayout.findViewById<RecyclerView>(R.id.rv_emoji_bsd)
-            val emojiAdapter = EmojiAdapter(MessageDatasource.getEmojis()) {
+            val emojiAdapter = EmojiAdapter(getEmojis()) {
                 setReactionOnClickListener(
                     reaction = MessageReaction(
-                        emojiSetNCS[MessageDatasource.getEmojis().indexOf(it)],
+                        emojiSetNCS[getEmojis().indexOf(it)],
                         1,
-                        true
+                        false
                     ),
                     msgId = msgId
                 )
@@ -152,7 +164,13 @@ class MessagesFragment : Fragment() {
     private fun setSendButtonOnClickListener() {
         binding.btnSend.setOnClickListener {
             if (binding.etMessage.text!!.isNotEmpty()) {
-                viewModel.sendMessage(binding.etMessage.text.toString())
+                lifecycleScope.launch {
+                    viewModel.messagesChannel.send(
+                        MessagesIntents.SendMessageIntent(
+                            content = binding.etMessage.text.toString()
+                        )
+                    )
+                }
                 binding.etMessage.text!!.clear()
             }
         }
@@ -174,16 +192,16 @@ class MessagesFragment : Fragment() {
         }
     }
 
-    private fun render(state: MessageScreenState) {
+    private fun render(state: MessagesScreenState) {
         when (state) {
-            MessageScreenState.Error -> {
+            MessagesScreenState.Error -> {
                 binding.apply {
                     tvMessagesError.isVisible = true
                     pbMessages.isVisible = false
                     rvChat.isVisible = false
                 }
             }
-            is MessageScreenState.Data -> {
+            is MessagesScreenState.Success -> {
                 binding.apply {
                     tvMessagesError.isVisible = false
                     rvChat.isVisible = true
@@ -191,8 +209,8 @@ class MessagesFragment : Fragment() {
                     msgAdapter.submitList(state.messages)
                 }
             }
-            MessageScreenState.Init -> {}
-            MessageScreenState.Loading -> {
+            MessagesScreenState.Init -> {}
+            MessagesScreenState.Loading -> {
                 binding.apply {
                     tvMessagesError.isVisible = false
                     rvChat.isVisible = false

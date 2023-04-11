@@ -1,21 +1,18 @@
 package com.example.homework_2.network.networkModels.users
 
+import com.squareup.moshi.Json
+
 data class Member(
-    val avatar_url: String?,
-    val avatar_version: Int,
-    val bot_owner_id: Int?,
-    val bot_type: Int?,
-    val date_joined: String,
-    val delivery_email: String?,
+    @Json(name = "avatar_url")
+    val avatarUrl: String?,
+    @Json(name = "email")
     val email: String,
-    val full_name: String,
-    val is_active: Boolean,
-    val is_admin: Boolean,
-    val is_billing_admin: Boolean,
-    val is_bot: Boolean?,
-    val is_guest: Boolean,
-    val is_owner: Boolean,
-    val role: Int,
-    val timezone: String,
-    val user_id: Int
+    @Json(name = "full_name")
+    val fullName: String,
+    @Json(name = "user_id")
+    val userId: Int,
+    @Json(name = "is_bot")
+    val isBot: Boolean?,
+    @Json(name = "is_active")
+    val isActive: Boolean
 )

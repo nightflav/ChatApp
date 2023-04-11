@@ -6,5 +6,5 @@ sealed class ProfileScreenState {
     object Loading : ProfileScreenState()
     object Error : ProfileScreenState()
     object Init : ProfileScreenState()
-    data class Profile(val profile: UserProfile) : ProfileScreenState()
+    data class Success(val profile: UserProfile) : ProfileScreenState()
 }

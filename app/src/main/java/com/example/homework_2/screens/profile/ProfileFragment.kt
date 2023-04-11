@@ -11,11 +11,12 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.homework_2.R
-import com.example.homework_2.Status
 import com.example.homework_2.databinding.FragmentProfileBinding
 import com.example.homework_2.models.UserProfile
+import com.example.homework_2.utils.Status
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -28,6 +29,9 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        lifecycleScope.launch {
+            viewModel.profileChannel.send(ProfileIntents.InitProfile)
+        }
         viewModel.screenState
             .flowWithLifecycle(lifecycle)
             .onEach(::render)
@@ -52,7 +56,7 @@ class ProfileFragment : Fragment() {
                     shimmerProfile.isVisible = false
                 }
             }
-            is ProfileScreenState.Profile -> {
+            is ProfileScreenState.Success -> {
                 binding.apply {
                     tvProfileError.isVisible = false
                     shimmerProfile.isVisible = false
@@ -84,12 +88,16 @@ class ProfileFragment : Fragment() {
         binding.tvProfileName.text = profile.fullName
         val textAndColor = when (profile.status) {
             Status.ACTIVE -> {
-                Pair(getString(R.string.online_is_active),
-                R.color.online_status)
+                Pair(
+                    getString(R.string.online_is_active),
+                    R.color.online_status
+                )
             }
             Status.OFFLINE -> {
-                Pair(getString(R.string.online_is_active),
-                R.color.online_status)
+                Pair(
+                    getString(R.string.online_is_active),
+                    R.color.online_status
+                )
             }
             else -> {
                 Pair(getString(R.string.online_is_active), R.color.online_status)

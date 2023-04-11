@@ -2,11 +2,12 @@ package com.example.homework_2.screens.stream
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
@@ -27,25 +28,30 @@ class StreamFragment : Fragment() {
     private val streamAdapter: StreamAdapter by lazy {
         StreamAdapter(requireContext(), findNavController()) {
             lifecycleScope.launch {
-                viewModel.renewTopics(it)
+                viewModel.streamChannel.send(
+                    StreamIntents.UpdateStreamSelectedState(
+                        it,
+                        showSubscribed
+                    )
+                )
             }
         }
     }
 
     private val viewModel: StreamViewModel by viewModels()
+    private val showSubscribed: Boolean
+        get() = binding.tlSelectChannel.selectedTabPosition == 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentChannelsBinding.inflate(inflater, container, false)
         val context = requireContext()
         initSearch()
         initRecyclerView(context)
         initTabView()
-
         viewModel.screenState
             .flowWithLifecycle(lifecycle)
             .onEach(::render)
@@ -54,30 +60,37 @@ class StreamFragment : Fragment() {
         return binding.root
     }
 
-    private fun initSearch() {
-        binding.etChannelsSearch.addTextChangedListener {
+    private val textWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             lifecycleScope.launch {
-                it?.let {
+                s?.let {
                     val request = it.toString()
-                    viewModel.searchForStream(request = request)
+                    viewModel.streamChannel.send(
+                        StreamIntents.SearchForStreamIntent(
+                            request = request,
+                            showSubscribed = showSubscribed
+                        )
+                    )
                 }
             }
         }
+        override fun afterTextChanged(s: Editable?) {}
     }
 
-    private fun initTabView() {
-        val selectedTabIndex = if (viewModel.showSubscribed) 0 else 1
-        binding.tlSelectChannel.getTabAt(selectedTabIndex)?.select()
-        binding.tlSelectChannel.addOnTabSelectedListener(getTabListener())
+    private fun initSearch() {
+        binding.etChannelsSearch.addTextChangedListener(textWatcher)
     }
 
-    private fun getTabListener() =
+    private val tabListener =
         object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                val showSubs = tab?.position == 0
                 lifecycleScope.launch {
-                    viewModel.showSubscribed = showSubs
-                    viewModel.refresh()
+                    viewModel.streamChannel.send(
+                        StreamIntents.ChangeSubscribedStreamsState(
+                            showSubscribed
+                        )
+                    )
                 }
             }
 
@@ -86,6 +99,10 @@ class StreamFragment : Fragment() {
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         }
 
+    private fun initTabView() {
+        binding.tlSelectChannel.addOnTabSelectedListener(tabListener)
+    }
+
     private fun initRecyclerView(context: Context) {
         binding.rvStreams.adapter = streamAdapter
         val rvLayoutManager = LinearLayoutManager(context)
@@ -93,7 +110,6 @@ class StreamFragment : Fragment() {
         binding.rvStreams.layoutManager = rvLayoutManager
         (binding.rvStreams.itemAnimator as SimpleItemAnimator).supportsChangeAnimations =
             false
-
     }
 
     private fun render(state: StreamScreenState) {
@@ -105,12 +121,16 @@ class StreamFragment : Fragment() {
                     rvStreams.isVisible = false
                 }
             }
-            is StreamScreenState.Data -> {
+            is StreamScreenState.Success -> {
                 binding.apply {
                     tvErrorStreams.isVisible = false
                     shimmerStreams.isVisible = false
                     rvStreams.isVisible = true
+
                     streamAdapter.submitList(state.streams)
+                    val tabPosition = if (state.showSubscribed) 0 else 1
+                    val tab = tlSelectChannel.getTabAt(tabPosition)
+                    tab!!.select()
                 }
             }
             StreamScreenState.Init -> {}
@@ -122,5 +142,11 @@ class StreamFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        binding.etChannelsSearch.removeTextChangedListener(textWatcher)
+        _binding = null
+        super.onDestroyView()
     }
 }

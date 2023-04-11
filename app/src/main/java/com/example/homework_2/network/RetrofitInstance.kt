@@ -1,6 +1,6 @@
 package com.example.homework_2.network
 
-import com.example.homework_2.BASE_URL
+import com.example.homework_2.utils.Network.BASE_URL
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit

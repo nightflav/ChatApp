@@ -1,24 +1,22 @@
 package com.example.homework_2.network.networkModels.messages
 
+import com.squareup.moshi.Json
+
 data class Message(
-    val avatar_url: String?,
-    val client: String,
+    @Json(name = "avatar_url")
+    val avatarUrl: String?,
+    @Json(name = "content")
     val content: String,
-    val content_type: String,
-    val display_recipient: String,
-    val flags: List<String>,
+    @Json(name = "id")
     val id: Int,
-    val is_me_message: Boolean,
+    @Json(name = "reactions")
     val reactions: List<Reaction>,
-    val recipient_id: Int,
-    val sender_email: String,
-    val sender_full_name: String,
-    val sender_id: Int,
-    val sender_realm_str: String,
-    val stream_id: Int,
-    val subject: String,
-    val submessages: List<Any>,
+    @Json(name = "sender_id")
+    val senderId: Int,
+    @Json(name = "stream_id")
+    val streamId: Int,
+    @Json(name = "timestamp")
     val timestamp: Int,
-    val topic_links: List<Any>,
-    val type: String
+    @Json(name = "sender_full_name")
+    val senderFullName: String
 )

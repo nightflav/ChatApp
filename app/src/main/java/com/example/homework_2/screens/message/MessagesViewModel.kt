@@ -3,15 +3,10 @@ package com.example.homework_2.screens.message
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.homework_2.datasource.MessageDatasource.addMessage
-import com.example.homework_2.datasource.MessageDatasource.getMessagesByTopic
-import com.example.homework_2.datasource.MessageDatasource.loadMessagesByTopic
-import com.example.homework_2.datasource.MessageDatasource.removeReaction
-import com.example.homework_2.datasource.MessageDatasource.sendReaction
 import com.example.homework_2.models.MessageReaction
-import com.example.homework_2.models.SingleMessage
-import com.example.homework_2.parseDate
-import com.example.homework_2.runCatchingNonCancellation
+import com.example.homework_2.repository.messagesRepository.MessageRepositoryImpl
+import com.example.homework_2.screens.message.MessagesIntents.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -32,86 +27,67 @@ class MessagesViewModel(
         }
     }
 
-    private val _screenState: MutableStateFlow<MessageScreenState> =
-        MutableStateFlow(MessageScreenState.Init)
+    val messagesChannel = Channel<MessagesIntents>()
+    private val _screenState: MutableStateFlow<MessagesScreenState> =
+        MutableStateFlow(MessagesScreenState.Init)
     val screenState get() = _screenState.asStateFlow()
-    private var messages: List<SingleMessage>? = null
+    private val repo = MessageRepositoryImpl()
+
 
     init {
+        subscribeForIntents()
+    }
+
+    private fun subscribeForIntents() {
         viewModelScope.launch {
-            _screenState.emit(MessageScreenState.Loading)
-            _screenState.emit(showMessages())
-        }
-    }
-
-    private suspend fun showMessages(): MessageScreenState {
-        val result = runCatchingNonCancellation {
-            _screenState.emit(MessageScreenState.Loading)
-            getMessagesByTopic(topicName, streamName)
-        }.getOrNull()
-        messages = result?.addDateSeparators()
-
-
-        return messages?.let { MessageScreenState.Data(it) }
-            ?: MessageScreenState.Error
-    }
-
-    fun setReactionOnMessage(msgId: String, reaction: MessageReaction) {
-        val reactionName = reaction.reaction.name
-        viewModelScope.launch {
-            if (reaction.isSelected)
-                removeReaction(msgId, reactionName)
-            else
-                sendReaction(msgId, reactionName)
-        }
-    }
-
-    fun sendMessage(content: String) {
-        viewModelScope.launch {
-            addMessage(
-                streamId = streamId,
-                topicName = topicName,
-                msg = content
-            )
-        }
-    }
-
-    fun updateMessages() {
-        viewModelScope.launch {
-            _screenState.emit(MessageScreenState.Loading)
-            loadMessagesByTopic(topicName, streamName)
-            _screenState.emit(showMessages())
-        }
-    }
-
-    private fun List<SingleMessage>?.addDateSeparators(): List<SingleMessage>? {
-        if (this == null || this.isEmpty()) return null
-
-        val resultMessages = mutableListOf<SingleMessage>()
-
-        var prevDate = this.first().date
-        resultMessages.add(
-            SingleMessage(
-                date = prevDate.parseDate(),
-                isDataSeparator = true
-            )
-        )
-
-        for (msg in this) {
-            val thisMsgDate = msg.date
-            if (thisMsgDate > prevDate) {
-                resultMessages.add(
-                    SingleMessage(
-                        date = thisMsgDate.parseDate(),
-                        isDataSeparator = true
+            messagesChannel.consumeAsFlow().collect {
+                when (it) {
+                    is InitMessagesIntent -> showAllMessages()
+                    is UpdateMessagesIntent -> updateMessages()
+                    is SendMessageIntent -> sendMessage(content = it.content)
+                    is ChangeReactionStateIntent -> changeReactionState(
+                        reaction = it.reaction,
+                        msgId = it.msgId
                     )
-                )
-                prevDate = thisMsgDate
+                }
             }
-            resultMessages.add(msg)
         }
+    }
 
-        return resultMessages
+    private suspend fun showAllMessages() {
+        MessageRepositoryImpl().getMessagesByTopic(
+            topicName = topicName,
+            streamName = streamName
+        ).collect {
+            _screenState.emit(it)
+        }
+    }
+
+    private suspend fun changeReactionState(reaction: MessageReaction, msgId: String) {
+        val reactionName = reaction.reaction.name
+        if (reaction.isSelected)
+            repo.removeReaction(msgId, reactionName).collect {
+                _screenState.emit(it)
+            }
+        else
+            repo.sendReaction(msgId, reactionName).collect {
+                _screenState.emit(it)
+            }
+    }
+
+    private suspend fun sendMessage(content: String) {
+        repo.sendMessage(
+            topicName = topicName,
+            content = content,
+            streamId = streamId
+        ).collect {
+            _screenState.emit(it)
+        }
+    }
+
+    private suspend fun updateMessages() {
+        repo.loadMessagesByTopic(topicName, streamName)
+        showAllMessages()
     }
 
 }

@@ -1,10 +1,8 @@
 package com.example.homework_2.network.networkModels.messages
 
+import com.squareup.moshi.Json
+
 data class MessageResponse(
-    val anchor: Long,
-    val found_anchor: Boolean,
-    val found_newest: Boolean,
+    @Json(name = "messages")
     val messages: List<Message>,
-    val msg: String,
-    val result: String
 )

@@ -2,49 +2,46 @@ package com.example.homework_2.screens.contacts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.homework_2.datasource.ProfilesDatasource
-import com.example.homework_2.datasource.ProfilesDatasource.getContacts
-import com.example.homework_2.runCatchingNonCancellation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import com.example.homework_2.repository.contactsRepository.ContactsRepositoryImpl
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
 class ContactsViewModel : ViewModel() {
 
-    private val _searchState: MutableStateFlow<ContactsScreenState> =
+    val contactsChannel = Channel<ContactsIntents>()
+    private val _screenState: MutableStateFlow<ContactsScreenState> =
         MutableStateFlow(ContactsScreenState.Init)
-    val searchState get() = _searchState.asStateFlow()
-    val searchRequestState: MutableSharedFlow<String> = MutableSharedFlow()
+    val screenState get() = _screenState.asStateFlow()
+
+    private val repo = ContactsRepositoryImpl()
 
     init {
-        subscribeToProfileSearch()
+        subscribeForIntents()
+    }
+
+    private fun subscribeForIntents() {
         viewModelScope.launch {
-            getContacts()
-            _searchState.emit(searchForProfile(""))
+            contactsChannel.consumeAsFlow().collect {
+                when(it) {
+                    is ContactsIntents.SearchForUserIntent -> searchForContact(it.request)
+                    is ContactsIntents.InitContacts -> loadContacts()
+                }
+            }
         }
     }
 
-    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    private fun subscribeToProfileSearch() {
-        searchRequestState
-            .filter { it.isNotBlank() }
-            .distinctUntilChanged()
-            .debounce(500L)
-            .flatMapLatest { flow { emit(searchForProfile(it)) } }
-            .onEach { _searchState.emit(it) }
-            .flowOn(Dispatchers.Default)
-            .launchIn(viewModelScope)
+    private suspend fun loadContacts() {
+        repo.getAllContacts().collect {
+            _screenState.emit(it)
+        }
     }
 
-    private suspend fun searchForProfile(request: String): ContactsScreenState {
-        val result = runCatchingNonCancellation {
-            _searchState.emit(ContactsScreenState.Loading)
-            ProfilesDatasource.getContactsWithSearchRequest(request)
-        }.getOrNull()
-
-        return result?.let { ContactsScreenState.Profiles(it) }
-            ?: ContactsScreenState.Error
+    private suspend fun searchForContact(request: String) {
+        repo.getContactsWithSearchRequest(request).collect {
+            _screenState.emit(it)
+        }
     }
 }

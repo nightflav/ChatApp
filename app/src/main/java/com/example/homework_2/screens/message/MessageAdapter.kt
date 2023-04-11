@@ -10,12 +10,12 @@ import android.widget.TextView
 import androidx.core.view.children
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.homework_2.MessageTypes.SENDER
 import com.example.homework_2.R
-import com.example.homework_2.datasource.MessageDatasource.getReactions
-import com.example.homework_2.dp
 import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.models.SingleMessage
+import com.example.homework_2.repository.messagesRepository.MessageRepositoryImpl
+import com.example.homework_2.utils.MessageTypes.SENDER
+import com.example.homework_2.utils.dp
 import com.example.homework_2.views.EmojiView
 import com.example.homework_2.views.MessageViewGroup
 import com.example.homework_2.views.ReactionsViewGroup
@@ -92,13 +92,14 @@ class MessageAdapter(
 
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
+            val reactions = MessageRepositoryImpl().getReactions(msgId, topicName)
             msgVg.reactions.setMaxSpace(277f.dp(context).toInt())
-            if (getReactions(msgId, topicName).isEmpty())
+            if (reactions.isEmpty())
                 msgVg.reactions.visibility = View.GONE
             else
                 msgVg.reactions.visibility = View.VISIBLE
 
-            msgVg.reactions.addReactions(getReactions(msgId, topicName)) {
+            msgVg.reactions.addReactions(reactions) {
                 onReactionClickListener(it, msgId)
                 notifyItemChanged(messages.map { msg -> msg.message_id }.indexOf(msgId))
             }
@@ -125,11 +126,12 @@ class MessageAdapter(
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
             msgSent.text = msg.msg
-            reactionsSent.addReactions(getReactions(msgId, topicName)) {
+            val reactions = MessageRepositoryImpl().getReactions(msgId, topicName)
+            reactionsSent.addReactions(reactions) {
                 onReactionClickListener(it, msgId)
                 notifyItemChanged(messages.map { msg -> msg.message_id }.indexOf(msgId))
             }
-            if (getReactions(msgId, topicName).isEmpty()) reactionsSent.visibility =
+            if (reactions.isEmpty()) reactionsSent.visibility =
                 View.GONE
             else reactionsSent.visibility = View.VISIBLE
 

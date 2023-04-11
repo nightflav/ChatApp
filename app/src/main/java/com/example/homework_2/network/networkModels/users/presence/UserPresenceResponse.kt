@@ -1,7 +1,8 @@
 package com.example.homework_2.network.networkModels.users.presence
 
+import com.squareup.moshi.Json
+
 data class UserPresenceResponse(
-    val msg: String,
-    val presence: Presence,
-    val result: String
+    @Json(name = "presence")
+    val presence: Presence
 )

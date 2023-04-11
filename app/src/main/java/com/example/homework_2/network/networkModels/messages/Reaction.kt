@@ -1,9 +1,12 @@
 package com.example.homework_2.network.networkModels.messages
 
+import com.squareup.moshi.Json
+
 data class Reaction(
-    val emoji_code: String,
-    val emoji_name: String,
-    val reaction_type: String,
-    val user: User,
-    val user_id: Int
+    @Json(name = "emoji_code")
+    val emojiCode: String,
+    @Json(name = "emoji_name")
+    val emojiName: String,
+    @Json(name = "user_id")
+    val userId: Int
 )

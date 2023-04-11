@@ -12,13 +12,14 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.homework_2.R
-import com.example.homework_2.models.Stream
-import com.example.homework_2.models.Topic
+import com.example.homework_2.models.streamScreenModels.StreamModel
+import com.example.homework_2.models.streamScreenModels.StreamScreenItem
+import com.example.homework_2.models.streamScreenModels.TopicModel
 
 class StreamAdapter(
     private val context: Context,
     private val navController: NavController,
-    private val onStreamClickListener: (Stream) -> Unit
+    private val onStreamClickListener: (StreamModel) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private companion object {
@@ -26,7 +27,7 @@ class StreamAdapter(
         private const val CHANNEL_VIEW_TYPE = 1
     }
 
-    private var dataList = emptyList<Any>()
+    private var dataList = emptyList<StreamScreenItem>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -45,34 +46,35 @@ class StreamAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is StreamViewHolder -> {
-                holder.bind(dataList[position] as Stream)
+                holder.bind(dataList[position] as StreamModel)
             }
             is TopicViewHolder -> {
-                holder.bind(dataList[position] as Topic)
+                holder.bind(dataList[position] as TopicModel)
             }
         }
     }
 
     override fun getItemViewType(position: Int): Int {
         return when (dataList[position]) {
-            is Topic -> TOPIC_VIEW_TYPE
-            else -> CHANNEL_VIEW_TYPE
+            is TopicModel -> TOPIC_VIEW_TYPE
+            is StreamModel -> CHANNEL_VIEW_TYPE
+            else -> throw IllegalStateException()
         }
     }
 
-    fun submitList(streams: List<Any>) {
+    fun submitList(streams: List<StreamScreenItem>) {
         val diffUtil = DiffCallback(
             dataList,
             streams
         )
         val diffResult = DiffUtil.calculateDiff(diffUtil)
-        dataList = streams
         diffResult.dispatchUpdatesTo(this)
+        dataList = streams
     }
 
     class DiffCallback(
-        private val oldList: List<Any>,
-        private val newList: List<Any>
+        private val oldList: List<StreamScreenItem>,
+        private val newList: List<StreamScreenItem>
     ) : DiffUtil.Callback() {
         override fun getOldListSize(): Int = oldList.size
 
@@ -81,10 +83,10 @@ class StreamAdapter(
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val item1 = oldList[oldItemPosition]
             val item2 = newList[newItemPosition]
-            return if (item1 is Stream && item2 is Stream)
+            return if (item1 is StreamModel && item2 is StreamModel)
                 item1.id == item2.id
             else
-                if (item1 is Topic && item2 is Topic)
+                if (item1 is TopicModel && item2 is TopicModel)
                     item1.id == item2.id
                 else
                     false
@@ -93,13 +95,7 @@ class StreamAdapter(
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val item1 = oldList[oldItemPosition]
             val item2 = newList[newItemPosition]
-            return if (item1 is Stream && item2 is Stream)
-                item1 == item2
-            else
-                if (item1 is Topic && item2 is Topic)
-                    item1 == item2
-                else
-                    false
+            return item1 == item2
         }
     }
 
@@ -107,7 +103,7 @@ class StreamAdapter(
         private val streamName = itemView.findViewById<TextView>(R.id.tv_stream_name)
         private val streamArrow = itemView.findViewById<ImageView>(R.id.iv_stream_button)
 
-        fun bind(stream: Stream) {
+        fun bind(stream: StreamModel) {
             itemView.setOnClickListener {
                 onStreamClickListener(stream)
             }
@@ -116,7 +112,6 @@ class StreamAdapter(
             else
                 AppCompatResources.getDrawable(context, R.drawable.ic_drop_down_arrow)
             streamArrow.setImageDrawable(imageToShow)
-
             streamName.text = stream.name
         }
     }
@@ -125,7 +120,7 @@ class StreamAdapter(
         private val topicName = itemView.findViewById<TextView>(R.id.topic_name)
         private val topicMsgCount = itemView.findViewById<TextView>(R.id.topic_msg_count)
 
-        fun bind(topic: Topic) {
+        fun bind(topic: TopicModel) {
             topicName.text = topic.name
             topicMsgCount.text = topic.msgCount.toString()
             when (topic.msgCount) {

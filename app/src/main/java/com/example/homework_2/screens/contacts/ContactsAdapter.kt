@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.homework_2.R
-import com.example.homework_2.Status
+import com.example.homework_2.utils.Status
 import com.example.homework_2.models.UserProfile
 
 class ContactsAdapter(private val context: Context) :

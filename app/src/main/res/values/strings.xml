@@ -20,5 +20,6 @@
     <string name="back_button_description">back button</string>
     <string name="topic_name">Topic: #%1$s</string>
     <string name="error_text">Error</string>
-    <string name="error_profile">Error occurred while loading profile</string>
+    <string name="error_profile">An error occurred while loading profile</string>
+    <string name="error_streams">An error occurred while loading streams.</string>
 </resources>
