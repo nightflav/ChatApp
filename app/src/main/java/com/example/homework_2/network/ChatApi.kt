@@ -17,39 +17,32 @@ interface ChatApi {
 
     @GET("streams")
     suspend fun getStreams(
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<StreamsResponse>
 
     @GET("users/me/subscriptions")
     suspend fun getSubscriptions(
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<SubscriptionsResponse>
 
     @GET("users/me/{stream_id}/topics")
     suspend fun getTopics(
         @Path("stream_id") streamId: String,
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<TopicsResponse>
 
     @GET("users")
     suspend fun getAllUsers(
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<UsersResponse>
 
     @GET("users/{user_id_or_email}/presence")
     suspend fun getUserPresence(
         @Path("user_id_or_email") userId: String,
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<UserPresenceResponse>
 
     @GET("realm/presence")
     suspend fun getAllUsersPresence(
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<AllUsersPresenceResponse>
 
     @GET("users/me")
     suspend fun getProfile(
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<Member>
 
     @GET("messages")
@@ -58,7 +51,6 @@ interface ChatApi {
         @Query("num_before") numBefore: Int = 10,
         @Query("num_after") numAfter: Int = 0,
         @Query("narrow") narrow: String,
-        @Header("Authorization") authKey: String = AUTH_KEY,
     ): Response<MessageResponse>
 
     @POST("messages")
@@ -67,20 +59,17 @@ interface ChatApi {
         @Query("to") to: String,
         @Query("content") content: String,
         @Query("topic") topic: String,
-        @Header("Authorization") authKey: String = AUTH_KEY,
     )
 
     @POST("messages/{msg_id}/reactions")
     suspend fun sendReaction(
         @Path("msg_id") msgId: String,
         @Query("emoji_name") emojiName: String,
-        @Header("Authorization") authKey: String = AUTH_KEY,
     )
 
     @DELETE("messages/{msg_id}/reactions")
     suspend fun removeReaction(
         @Path("msg_id") msgId: String,
         @Query("emoji_name") emojiName: String,
-        @Header("Authorization") authKey: String = AUTH_KEY,
     )
 }

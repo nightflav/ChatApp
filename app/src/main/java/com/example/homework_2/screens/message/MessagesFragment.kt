@@ -72,7 +72,6 @@ class MessagesFragment : Fragment() {
                 setReactionOnClickListener(reaction, msgId)
             }
         )
-
         binding.btnTmpRefreshMessages.setOnClickListener {
             lifecycleScope.launch {
                 viewModel.messagesChannel.send(MessagesIntents.UpdateMessagesIntent)
@@ -113,7 +112,9 @@ class MessagesFragment : Fragment() {
 
     private fun initRecyclerView() {
         binding.rvChat.adapter = msgAdapter
-        val rvLayoutManager = LinearLayoutManager(requireContext())
+        val rvLayoutManager = LinearLayoutManager(requireContext()).also {
+            it.stackFromEnd = true
+        }
         rvLayoutManager.generateDefaultLayoutParams()
         binding.rvChat.layoutManager = rvLayoutManager
         (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
