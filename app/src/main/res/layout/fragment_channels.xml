@@ -30,7 +30,8 @@
             android:paddingEnd="8dp"
             android:textColor="@color/white_text"
             android:textColorHint="@color/light_light_gray_text"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            android:freezesText="false"/>
 
         <ImageView
             android:id="@+id/search_channels_screen_button"

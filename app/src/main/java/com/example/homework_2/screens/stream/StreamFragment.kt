@@ -29,9 +29,8 @@ class StreamFragment : Fragment() {
         StreamAdapter(requireContext(), findNavController()) {
             lifecycleScope.launch {
                 viewModel.streamChannel.send(
-                    StreamIntents.UpdateStreamSelectedState(
-                        it,
-                        showSubscribed
+                    StreamIntents.UpdateStreamSelectedStateIntent(
+                        it
                     )
                 )
             }
@@ -56,48 +55,49 @@ class StreamFragment : Fragment() {
             .flowWithLifecycle(lifecycle)
             .onEach(::render)
             .launchIn(lifecycleScope)
-
         return binding.root
     }
 
     private val textWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        }
+
+        override fun afterTextChanged(s: Editable?) {
             lifecycleScope.launch {
                 s?.let {
                     val request = it.toString()
                     viewModel.streamChannel.send(
                         StreamIntents.SearchForStreamIntent(
-                            request = request,
-                            showSubscribed = showSubscribed
+                            request = request
                         )
                     )
                 }
             }
         }
-        override fun afterTextChanged(s: Editable?) {}
     }
 
     private fun initSearch() {
         binding.etChannelsSearch.addTextChangedListener(textWatcher)
     }
 
-    private val tabListener =
-        object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                lifecycleScope.launch {
-                    viewModel.streamChannel.send(
-                        StreamIntents.ChangeSubscribedStreamsState(
-                            showSubscribed
-                        )
+    private val tabListener = object : TabLayout.OnTabSelectedListener {
+        override fun onTabSelected(tab: TabLayout.Tab?) {
+            lifecycleScope.launch {
+                viewModel.streamChannel.send(
+                    StreamIntents.ShowCurrentStreamsIntent(
+                        showSubscribed
                     )
-                }
+                )
+                binding.rvStreams.scrollToPosition(0)
             }
-
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
         }
+
+        override fun onTabUnselected(tab: TabLayout.Tab?) {}
+
+        override fun onTabReselected(tab: TabLayout.Tab?) {}
+    }
 
     private fun initTabView() {
         binding.tlSelectChannel.addOnTabSelectedListener(tabListener)
@@ -112,33 +112,33 @@ class StreamFragment : Fragment() {
             false
     }
 
-    private fun render(state: StreamScreenState) {
-        when (state) {
-            StreamScreenState.Error -> {
-                binding.apply {
-                    tvErrorStreams.isVisible = true
-                    shimmerStreams.isVisible = false
-                    rvStreams.isVisible = false
-                }
-            }
-            is StreamScreenState.Success -> {
-                binding.apply {
-                    tvErrorStreams.isVisible = false
-                    shimmerStreams.isVisible = false
-                    rvStreams.isVisible = true
-
-                    streamAdapter.submitList(state.streams)
-                    val tabPosition = if (state.showSubscribed) 0 else 1
-                    val tab = tlSelectChannel.getTabAt(tabPosition)
-                    tab!!.select()
-                }
-            }
-            StreamScreenState.Init -> {}
-            StreamScreenState.Loading -> {
+    private fun render(state: ScreenUiState) {
+        when {
+            state.isLoading -> {
                 binding.apply {
                     tvErrorStreams.isVisible = false
                     shimmerStreams.isVisible = true
                     rvStreams.isVisible = false
+                }
+            }
+            state.error != null -> {
+                binding.apply {
+                    tvErrorStreams.isVisible = true
+                    tvErrorStreams.text = state.error.message
+                    shimmerStreams.isVisible = false
+                    rvStreams.isVisible = false
+                }
+            }
+            else -> {
+                binding.apply {
+                    tvErrorStreams.isVisible = false
+                    shimmerStreams.isVisible = false
+                    rvStreams.isVisible = true
+                    streamAdapter.submitList(state.streams!!)
+
+                    val tabPosition = if (state.showSubs) 0 else 1
+                    val tab = tlSelectChannel.getTabAt(tabPosition)
+                    tab!!.select()
                 }
             }
         }

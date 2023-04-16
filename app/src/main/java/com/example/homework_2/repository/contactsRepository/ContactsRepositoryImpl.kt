@@ -1,5 +1,6 @@
 package com.example.homework_2.repository.contactsRepository
 
+import android.util.Log
 import com.example.homework_2.models.UserProfile
 import com.example.homework_2.network.RetrofitInstance.Companion.chatApi
 import com.example.homework_2.screens.contacts.ContactsScreenState
@@ -14,14 +15,13 @@ class ContactsRepositoryImpl : ContactsRepository {
         val resultMembers = mutableListOf<UserProfile>()
         val users = chatApi.getAllUsers().body()?.members ?: return
         val userPresence = chatApi.getAllUsersPresence().body()?.presences ?: return
-
         for (member in users) {
             if (member.isBot == false && member.isActive) {
                 val currUserPresence = userPresence[member.email]
                 resultMembers.add(
                     UserProfile(
                         fullName = member.fullName,
-                        status = currUserPresence!!.aggregated.status,
+                        status = currUserPresence?.website?.status,
                         avatarSource = member.avatarUrl
                             ?: "https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png",
                         email = member.email,
@@ -38,10 +38,12 @@ class ContactsRepositoryImpl : ContactsRepository {
             emit(ContactsScreenState.Loading)
             if (contacts == null) {
                 try {
+                    Log.d("msgmsgmsg", "start to load contatcs")
                     loadContacts()
+                    Log.d("msgmsgmsg", "contacts loaded")
                     emit(ContactsScreenState.Success(contacts!!))
                 } catch (e: Exception) {
-                    emit(ContactsScreenState.Error)
+                    emit(ContactsScreenState.Error(e))
                 }
             } else {
                 emit(ContactsScreenState.Success(contacts!!))
@@ -61,6 +63,6 @@ class ContactsRepositoryImpl : ContactsRepository {
                             (it.fullName + " " + it.email).contains(request)
                 }))
             else
-                emit(ContactsScreenState.Error)
+                emit(ContactsScreenState.Error(Exception()))
         }
 }

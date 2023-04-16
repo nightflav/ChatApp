@@ -92,24 +92,22 @@ class ReactionsViewGroup @JvmOverloads constructor(
         var offsetX = paddingStart
         var maxHeight = 0
         for (child in childViews) {
-            if (offsetX + child.measuredWidth < maxWidth) {
+            if (offsetX + child.measuredWidth < maxWidth - paddingEnd - spaceBetween) {
                 layoutChild(
                     child,
                     offsetX,
                     offsetY + (maxHeightByRow[rowNumber] - child.measuredHeight) / 2
                 )
-                offsetX += child.measuredWidth + if (offsetX + child.measuredWidth >= maxWidth) 0 else spaceBetween
+                offsetX += child.measuredWidth + spaceBetween
                 maxHeight =
                     if (child.measuredHeight > maxHeight) child.measuredHeight else maxHeight
             } else {
                 rowNumber++
                 offsetX = paddingStart
                 offsetY += maxHeight + spaceBetween / 2
-                maxHeight = 0
                 layoutChild(child, offsetX, offsetY)
-                offsetX += child.measuredWidth + if (offsetX + child.measuredWidth >= maxWidth) 0 else spaceBetween
-                maxHeight =
-                    if (child.measuredHeight > maxHeight) child.measuredHeight else maxHeight
+                offsetX += child.measuredWidth + spaceBetween
+                maxHeight = child.measuredHeight
             }
         }
     }

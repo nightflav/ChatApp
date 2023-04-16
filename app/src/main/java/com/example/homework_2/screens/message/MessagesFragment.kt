@@ -22,9 +22,9 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.homework_2.R
 import com.example.homework_2.databinding.FragmentMessagesBinding
 import com.example.homework_2.models.MessageReaction
+import com.example.homework_2.utils.Emojis.emojiSetNCS
 import com.example.homework_2.utils.Emojis.getEmojis
 import com.example.homework_2.utils.dp
-import com.example.homework_2.utils.emojiSetNCS
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -66,12 +66,10 @@ class MessagesFragment : Fragment() {
         val context = requireContext()
         msgAdapter = MessageAdapter(
             { msgId -> getReaction(msgId, context) },
-            context,
-            topicName,
-            { reaction, msgId ->
-                setReactionOnClickListener(reaction, msgId)
-            }
-        )
+            context
+        ) { reaction, msgId ->
+            setReactionOnClickListener(reaction, msgId)
+        }
         binding.btnTmpRefreshMessages.setOnClickListener {
             lifecycleScope.launch {
                 viewModel.messagesChannel.send(MessagesIntents.UpdateMessagesIntent)
@@ -117,7 +115,7 @@ class MessagesFragment : Fragment() {
         }
         rvLayoutManager.generateDefaultLayoutParams()
         binding.rvChat.layoutManager = rvLayoutManager
-        (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+        (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
     }
 
     private fun setReactionOnClickListener(

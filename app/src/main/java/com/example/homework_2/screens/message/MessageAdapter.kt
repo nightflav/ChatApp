@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.homework_2.R
 import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.models.SingleMessage
-import com.example.homework_2.repository.messagesRepository.MessageRepositoryImpl
+import com.example.homework_2.utils.Emojis.UNKNOWN_EMOJI
 import com.example.homework_2.utils.MessageTypes.SENDER
 import com.example.homework_2.utils.dp
 import com.example.homework_2.views.EmojiView
@@ -23,7 +23,6 @@ import com.example.homework_2.views.ReactionsViewGroup
 class MessageAdapter(
     private val getReaction: (String) -> Unit,
     private val context: Context,
-    private val topicName: String,
     private val onReactionClickListener: (MessageReaction, String) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -92,7 +91,7 @@ class MessageAdapter(
 
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
-            val reactions = MessageRepositoryImpl().getReactions(msgId, topicName)
+            val reactions = msg.reactions
             msgVg.reactions.setMaxSpace(277f.dp(context).toInt())
             if (reactions.isEmpty())
                 msgVg.reactions.visibility = View.GONE
@@ -103,7 +102,7 @@ class MessageAdapter(
                 onReactionClickListener(it, msgId)
                 notifyItemChanged(messages.map { msg -> msg.message_id }.indexOf(msgId))
             }
-            
+
             msgVg.name.text = msg.senderName
             msgVg.message.text = msg.msg
             msgVg.setOnLongClickListener {
@@ -126,7 +125,7 @@ class MessageAdapter(
         fun bind(msg: SingleMessage) {
             val msgId = msg.message_id
             msgSent.text = msg.msg
-            val reactions = MessageRepositoryImpl().getReactions(msgId, topicName)
+            val reactions = msg.reactions
             reactionsSent.addReactions(reactions) {
                 onReactionClickListener(it, msgId)
                 notifyItemChanged(messages.map { msg -> msg.message_id }.indexOf(msgId))
@@ -153,17 +152,19 @@ class MessageAdapter(
         )
 
         for (react in reactions) {
-            val viewToAdd = EmojiView(context)
-            with(viewToAdd) {
-                count = react.count
-                emoji = react.reaction.getCodeString()
-                isSelected = react.isSelected
-                setEmojiBackground()
-                setOnClickListener {
-                    onReactionClickListener(react)
+            if (react.reaction.getCodeString() != UNKNOWN_EMOJI) {
+                val viewToAdd = EmojiView(context)
+                with(viewToAdd) {
+                    count = react.count
+                    emoji = react.reaction.getCodeString()
+                    isSelected = react.isSelected
+                    setEmojiBackground()
+                    setOnClickListener {
+                        onReactionClickListener(react)
+                    }
                 }
+                this.addView(viewToAdd)
             }
-            this.addView(viewToAdd)
         }
     }
 

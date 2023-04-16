@@ -9,7 +9,6 @@ import com.example.homework_2.network.networkModels.users.Member
 import com.example.homework_2.network.networkModels.users.UsersResponse
 import com.example.homework_2.network.networkModels.users.presence.UserPresenceResponse
 import com.example.homework_2.network.networkModels.users.presence.allUsersPresence.AllUsersPresenceResponse
-import com.example.homework_2.utils.Network.AUTH_KEY
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -48,7 +47,7 @@ interface ChatApi {
     @GET("messages")
     suspend fun getMessages(
         @Query("anchor") anchor: String = "newest",
-        @Query("num_before") numBefore: Int = 10,
+        @Query("num_before") numBefore: Int = 10000,
         @Query("num_after") numAfter: Int = 0,
         @Query("narrow") narrow: String,
     ): Response<MessageResponse>

@@ -59,7 +59,7 @@ fun Int.toDate(): String =
 
 fun String.parseDate(): String {
     val day = this.drop(8)
-    val month = when(this.drop(5).dropLast(3)) {
+    val month = when (this.drop(5).dropLast(3)) {
         "01" -> "Jan"
         "02" -> "Feb"
         "03" -> "Mar"

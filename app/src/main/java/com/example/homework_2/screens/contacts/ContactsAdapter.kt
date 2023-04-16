@@ -40,7 +40,7 @@ class ContactsAdapter(private val context: Context) :
         fun bind(profile: UserProfile) {
             val isActiveStatusColor = when (profile.status) {
                 Status.ACTIVE -> context.resources.getColor(R.color.online_status, context.theme)
-                Status.OFFLINE -> context.resources.getColor(R.color.offline_status, context.theme)
+                Status.OFFLINE, null -> context.resources.getColor(R.color.offline_status, context.theme)
                 Status.IDLE -> context.resources.getColor(R.color.idle_status, context.theme)
                 else -> throw IllegalStateException()
             }

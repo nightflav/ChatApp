@@ -65,11 +65,12 @@ class ContactsFragment : Fragment() {
 
     private fun render(state: ContactsScreenState) {
         when (state) {
-            ContactsScreenState.Error -> {
+            is ContactsScreenState.Error -> {
                 binding.apply {
                     tvErrorStreams.isVisible = true
                     shimmerContacts.isVisible = false
                     rvContacts.isVisible = false
+                    tvErrorStreams.text = state.e.message
                 }
             }
             is ContactsScreenState.Success -> {

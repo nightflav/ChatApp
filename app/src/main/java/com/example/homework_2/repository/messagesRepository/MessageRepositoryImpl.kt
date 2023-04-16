@@ -1,6 +1,5 @@
 package com.example.homework_2.repository.messagesRepository
 
-import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.models.SingleMessage
 import com.example.homework_2.network.RetrofitInstance.Companion.chatApi
 import com.example.homework_2.network.narrow.NarrowItem
@@ -15,9 +14,7 @@ import kotlinx.coroutines.flow.flow
 
 class MessageRepositoryImpl : MessagesRepository {
 
-    companion object {
-        private val messagesByTopic: MutableMap<String, List<SingleMessage>?> = mutableMapOf()
-    }
+    private val messagesByTopic: MutableMap<String, List<SingleMessage>?> = mutableMapOf()
 
     override suspend fun getMessagesByTopic(
         topicName: String,
@@ -111,9 +108,4 @@ class MessageRepositoryImpl : MessagesRepository {
             senderId -> MessageTypes.SENDER
             else -> MessageTypes.RECEIVER
         }
-
-    fun getReactions(msgId: String, topicName: String): List<MessageReaction> {
-        val message = messagesByTopic[topicName]?.first { it.message_id == msgId }
-        return message?.reactions ?: emptyList()
-    }
 }

@@ -1,17 +1,11 @@
 package com.example.homework_2.repository.streamsRepository
 
-import com.example.homework_2.screens.stream.StreamScreenState
-import kotlinx.coroutines.flow.Flow
+import com.example.homework_2.models.streamScreenModels.StreamScreenItem
 
 interface StreamsRepository {
 
-    suspend fun getAllStreams(): Flow<StreamScreenState>
+    suspend fun getAllStreams(): List<StreamScreenItem>
 
-    suspend fun getSubscribedStreams(): Flow<StreamScreenState>
-
-    suspend fun getSearchStream(
-        request: String,
-        subOnly: Boolean
-    ): Flow<StreamScreenState>
+    suspend fun getSubscribedStreams(): List<StreamScreenItem>
 
 }

@@ -1,12 +1,8 @@
 package com.example.homework_2.repository.streamsRepository
 
 import com.example.homework_2.models.streamScreenModels.StreamModel
-import com.example.homework_2.models.streamScreenModels.StreamScreenItem
 import com.example.homework_2.network.RetrofitInstance
-import com.example.homework_2.screens.stream.StreamScreenState
 import com.example.homework_2.utils.toTopicList
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 class StreamsRepositoryImpl : StreamsRepository {
 
@@ -15,18 +11,11 @@ class StreamsRepositoryImpl : StreamsRepository {
         private var subsStreams: MutableList<StreamModel>? = null
     }
 
-    override suspend fun getAllStreams(): Flow<StreamScreenState> = flow {
-        emit(StreamScreenState.Loading)
-        if (streams == null) {
-            try {
-                loadStreams()
-                emit(StreamScreenState.Success(streams!!.toListToShow(), false))
-            } catch (e: Exception) {
-                emit(StreamScreenState.Error)
-            }
-        } else {
-            emit(StreamScreenState.Success(streams!!.toListToShow(), false))
-        }
+    override suspend fun getAllStreams() = if (streams == null) {
+        loadStreams()
+        streams!!
+    } else {
+        streams!!
     }
 
     private suspend fun loadStreams() {
@@ -46,18 +35,11 @@ class StreamsRepositoryImpl : StreamsRepository {
         streams = resultStreams
     }
 
-    override suspend fun getSubscribedStreams(): Flow<StreamScreenState> = flow {
-        emit(StreamScreenState.Loading)
-        if (subsStreams == null) {
-            try {
-                loadSubscriptions()
-                emit(StreamScreenState.Success(subsStreams!!.toListToShow(), true))
-            } catch (e: Exception) {
-                emit(StreamScreenState.Error)
-            }
-        } else {
-            emit(StreamScreenState.Success(subsStreams!!.toListToShow(), true))
-        }
+    override suspend fun getSubscribedStreams() = if (subsStreams == null) {
+        loadSubscriptions()
+        subsStreams!!
+    } else {
+        subsStreams!!
     }
 
     private suspend fun loadSubscriptions() {
@@ -77,47 +59,6 @@ class StreamsRepositoryImpl : StreamsRepository {
         subsStreams = resultStreams
     }
 
-    override suspend fun getSearchStream(
-        request: String,
-        subOnly: Boolean
-    ): Flow<StreamScreenState> = flow {
-        emit(StreamScreenState.Loading)
-        if (subOnly) {
-            if (subsStreams == null)
-                emit(StreamScreenState.Error)
-            else
-                emit(
-                    StreamScreenState.Success(
-                        subsStreams!!.filter {
-                            it.name.lowercase().contains(request.lowercase())
-                        }.toListToShow(),
-                        true
-                    )
-                )
-        } else {
-            if (streams == null)
-                emit(StreamScreenState.Error)
-            else
-                emit(
-                    StreamScreenState.Success(
-                        streams!!.filter {
-                            it.name.lowercase().contains(request.lowercase())
-                        }.toListToShow(),
-                        false
-                    )
-                )
-        }
-    }
-
-    fun changeStreamSelectedState(stream: StreamModel, showSubscribed: Boolean) {
-        val streamListToChange = if (showSubscribed) subsStreams else streams
-        if (streamListToChange?.map { it.id }?.contains(stream.id) == true) {
-            streamListToChange[streamListToChange.indexOf(stream)] = stream.copy(
-                isSelected = !stream.isSelected
-            )
-        } else return
-    }
-
     fun setTopicMsgCount(topicName: String, count: Int, streamName: String) {
         val topic =
             streams?.firstOrNull { it.name == streamName }?.topics?.firstOrNull { it.name == topicName }
@@ -127,16 +68,13 @@ class StreamsRepositoryImpl : StreamsRepository {
         topicSubs?.msgCount = count
     }
 
-    private fun List<StreamModel>.toListToShow(): List<StreamScreenItem> {
-        val result = mutableListOf<StreamScreenItem>()
-        for (stream in this) {
-            result.add(stream)
-            if (stream.isSelected)
-                result.addAll(
-                    stream.topics
-                )
-        }
-        return result
-    }
 
+    fun changeStreamSelectedState(stream: StreamModel, showSubscribed: Boolean) {
+        val streamListToChange = if (showSubscribed) subsStreams else streams
+        if (streamListToChange?.map { it.id }?.contains(stream.id) == true) {
+            streamListToChange[streamListToChange.indexOf(stream)] = stream.copy(
+                isSelected = !stream.isSelected
+            )
+        } else return
+    }
 }
