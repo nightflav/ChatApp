@@ -2,9 +2,9 @@ package com.example.homework_2.screens.stream
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.homework_2.models.streamScreenModels.StreamModel
-import com.example.homework_2.models.streamScreenModels.StreamScreenItem
-import com.example.homework_2.repository.streamsRepository.StreamsRepositoryImpl
+import com.example.homework_2.models.stream_screen_models.StreamModel
+import com.example.homework_2.models.stream_screen_models.StreamScreenItem
+import com.example.homework_2.repository.streams_repository.StreamsRepositoryImpl
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

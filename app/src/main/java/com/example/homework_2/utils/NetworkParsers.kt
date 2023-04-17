@@ -4,13 +4,13 @@ import androidx.core.text.HtmlCompat
 import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.models.SingleMessage
 import com.example.homework_2.models.UserProfile
-import com.example.homework_2.models.streamScreenModels.TopicModel
+import com.example.homework_2.models.stream_screen_models.TopicModel
 import com.example.homework_2.network.RetrofitInstance
-import com.example.homework_2.network.networkModels.messages.Message
-import com.example.homework_2.network.networkModels.messages.Reaction
-import com.example.homework_2.network.networkModels.users.Member
-import com.example.homework_2.repository.messagesRepository.MessageRepositoryImpl
-import com.example.homework_2.repository.profileRepository.ProfileRepositoryImpl
+import com.example.homework_2.network.network_models.messages.Message
+import com.example.homework_2.network.network_models.messages.Reaction
+import com.example.homework_2.network.network_models.users.Member
+import com.example.homework_2.repository.messages_repository.MessageRepositoryImpl
+import com.example.homework_2.repository.profile_repository.ProfileRepositoryImpl
 import retrofit2.Response
 
 suspend fun Response<Member>.toUserProfile(): UserProfile? {
@@ -72,7 +72,7 @@ suspend fun List<Message>.toSingleMessageList(): List<SingleMessage> {
     return resultMessages
 }
 
-fun List<com.example.homework_2.network.networkModels.topics.Topic>.toTopicList(
+fun List<com.example.homework_2.network.network_models.topics.Topic>.toTopicList(
     streamId: String,
     streamName: String
 ): List<TopicModel> = map {

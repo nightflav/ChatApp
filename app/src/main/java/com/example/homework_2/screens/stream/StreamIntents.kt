@@ -1,6 +1,6 @@
 package com.example.homework_2.screens.stream
 
-import com.example.homework_2.models.streamScreenModels.StreamModel
+import com.example.homework_2.models.stream_screen_models.StreamModel
 
 sealed class StreamIntents {
     data class SearchForStreamIntent(val request: String) : StreamIntents()

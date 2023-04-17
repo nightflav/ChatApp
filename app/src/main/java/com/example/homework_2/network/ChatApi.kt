@@ -1,14 +1,14 @@
 package com.example.homework_2.network
 
 import com.example.homework_2.*
-import com.example.homework_2.network.networkModels.messages.MessageResponse
-import com.example.homework_2.network.networkModels.streams.StreamsResponse
-import com.example.homework_2.network.networkModels.subscriptions.SubscriptionsResponse
-import com.example.homework_2.network.networkModels.topics.TopicsResponse
-import com.example.homework_2.network.networkModels.users.Member
-import com.example.homework_2.network.networkModels.users.UsersResponse
-import com.example.homework_2.network.networkModels.users.presence.UserPresenceResponse
-import com.example.homework_2.network.networkModels.users.presence.allUsersPresence.AllUsersPresenceResponse
+import com.example.homework_2.network.network_models.messages.MessageResponse
+import com.example.homework_2.network.network_models.streams.StreamsResponse
+import com.example.homework_2.network.network_models.subscriptions.SubscriptionsResponse
+import com.example.homework_2.network.network_models.topics.TopicsResponse
+import com.example.homework_2.network.network_models.users.Member
+import com.example.homework_2.network.network_models.users.UsersResponse
+import com.example.homework_2.network.network_models.users.presence.UserPresenceResponse
+import com.example.homework_2.network.network_models.users.presence.allUsersPresence.AllUsersPresenceResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -47,7 +47,7 @@ interface ChatApi {
     @GET("messages")
     suspend fun getMessages(
         @Query("anchor") anchor: String = "newest",
-        @Query("num_before") numBefore: Int = 10000,
+        @Query("num_before") numBefore: Int = 1000,
         @Query("num_after") numAfter: Int = 0,
         @Query("narrow") narrow: String,
     ): Response<MessageResponse>

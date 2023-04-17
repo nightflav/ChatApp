@@ -2,7 +2,7 @@ package com.example.homework_2.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.homework_2.repository.profileRepository.ProfileRepositoryImpl
+import com.example.homework_2.repository.profile_repository.ProfileRepositoryImpl
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

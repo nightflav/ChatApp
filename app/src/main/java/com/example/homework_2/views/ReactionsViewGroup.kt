@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.content.withStyledAttributes
 import androidx.core.view.children
 import com.example.homework_2.R
+import com.example.homework_2.utils.dp
 import com.example.homework_2.utils.px
 
 class ReactionsViewGroup @JvmOverloads constructor(
@@ -19,12 +20,13 @@ class ReactionsViewGroup @JvmOverloads constructor(
     private var maxHeightByRow = mutableListOf(-1)
     private var totalWidth = 0
     private var totalHeight = 0
-    private var spaceBetween = 24
+    private var spaceBetweenHorizontal = 4f.dp(context).toInt()
+    private var spaceBetweenVertical = 4f.dp(context).toInt()
     private var maxWidth = context.resources.displayMetrics.widthPixels
     private lateinit var childViews: MutableList<View>
     init {
         context.withStyledAttributes(attrs, R.styleable.ReactionsViewGroup) {
-            spaceBetween = this.getInt(R.styleable.ReactionsViewGroup_spaceBetween, spaceBetween)
+            spaceBetweenHorizontal = this.getInt(R.styleable.ReactionsViewGroup_spaceBetween, spaceBetweenHorizontal)
             maxWidth = this.getDimension(
                 R.styleable.ReactionsViewGroup_maxSpace,
                 maxWidth.toFloat()
@@ -50,11 +52,11 @@ class ReactionsViewGroup @JvmOverloads constructor(
             measureChild(child, widthMeasureSpec, heightMeasureSpec)
 
             currWidth += child.measuredWidth +
-                    if (currWidth + child.measuredWidth > maxWidth) 0 else spaceBetween
+                    if (currWidth + child.measuredWidth > maxWidth) 0 else spaceBetweenHorizontal
 
             if (currWidth > maxWidth) {
                 currWidth = child.measuredWidth
-                currHeight += currMaxHeight + spaceBetween / 2
+                currHeight += currMaxHeight + spaceBetweenVertical / 2
                 maxHeightByRow.add(currMaxHeight)
                 currMaxHeight = child.measuredHeight
             }
@@ -92,21 +94,21 @@ class ReactionsViewGroup @JvmOverloads constructor(
         var offsetX = paddingStart
         var maxHeight = 0
         for (child in childViews) {
-            if (offsetX + child.measuredWidth < maxWidth - paddingEnd - spaceBetween) {
+            if (offsetX + child.measuredWidth < maxWidth - paddingEnd - spaceBetweenHorizontal) {
                 layoutChild(
                     child,
                     offsetX,
                     offsetY + (maxHeightByRow[rowNumber] - child.measuredHeight) / 2
                 )
-                offsetX += child.measuredWidth + spaceBetween
+                offsetX += child.measuredWidth + spaceBetweenHorizontal
                 maxHeight =
                     if (child.measuredHeight > maxHeight) child.measuredHeight else maxHeight
             } else {
                 rowNumber++
                 offsetX = paddingStart
-                offsetY += maxHeight + spaceBetween / 2
+                offsetY += maxHeight + spaceBetweenVertical / 2
                 layoutChild(child, offsetX, offsetY)
-                offsetX += child.measuredWidth + spaceBetween
+                offsetX += child.measuredWidth + spaceBetweenHorizontal
                 maxHeight = child.measuredHeight
             }
         }

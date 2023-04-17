@@ -12,9 +12,9 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.homework_2.R
-import com.example.homework_2.models.streamScreenModels.StreamModel
-import com.example.homework_2.models.streamScreenModels.StreamScreenItem
-import com.example.homework_2.models.streamScreenModels.TopicModel
+import com.example.homework_2.models.stream_screen_models.StreamModel
+import com.example.homework_2.models.stream_screen_models.StreamScreenItem
+import com.example.homework_2.models.stream_screen_models.TopicModel
 
 class StreamAdapter(
     private val context: Context,

@@ -1,3 +1,0 @@
-package com.example.homework_2.models.streamScreenModels
-
-abstract class StreamScreenItem

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.homework_2.models.MessageReaction
-import com.example.homework_2.repository.messagesRepository.MessageRepositoryImpl
+import com.example.homework_2.repository.messages_repository.MessageRepositoryImpl
 import com.example.homework_2.screens.message.MessagesIntents.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
