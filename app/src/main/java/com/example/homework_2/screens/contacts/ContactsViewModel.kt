@@ -2,21 +2,22 @@ package com.example.homework_2.screens.contacts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.homework_2.repository.contacts_repository.ContactsRepositoryImpl
+import com.example.homework_2.repository.contacts_repository.ContactsRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ContactsViewModel : ViewModel() {
+class ContactsViewModel @Inject constructor(
+    private val repo: ContactsRepository
+) : ViewModel() {
 
     val contactsChannel = Channel<ContactsIntents>()
     private val _screenState: MutableStateFlow<ContactsScreenState> =
         MutableStateFlow(ContactsScreenState.Init)
     val screenState get() = _screenState.asStateFlow()
-
-    private val repo = ContactsRepositoryImpl()
 
     init {
         subscribeForIntents()

@@ -2,9 +2,14 @@ package com.example.homework_2.utils
 
 import android.content.Context
 import android.util.TypedValue
+import androidx.fragment.app.Fragment
+import com.example.homework_2.App
+import com.example.homework_2.di.ApplicationComponent
 import com.example.homework_2.models.SingleMessage
 import java.time.ZoneId
 import java.util.*
+
+fun Fragment.getAppComponent(): ApplicationComponent = (requireContext().applicationContext as App).appComponent
 
 fun List<SingleMessage>?.addDateSeparators(): List<SingleMessage>? {
     if (this == null || this.isEmpty()) return null

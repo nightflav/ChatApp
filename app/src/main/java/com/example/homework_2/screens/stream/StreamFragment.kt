@@ -9,17 +9,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.homework_2.databinding.FragmentChannelsBinding
+import com.example.homework_2.di.ViewModelFactory
+import com.example.homework_2.utils.getAppComponent
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class StreamFragment : Fragment() {
 
@@ -37,9 +40,22 @@ class StreamFragment : Fragment() {
         }
     }
 
-    private val viewModel: StreamViewModel by viewModels()
     private val showSubscribed: Boolean
         get() = binding.tlSelectChannel.selectedTabPosition == 0
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[StreamViewModel::class.java]
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val appComponent = getAppComponent()
+        val streamComponent = appComponent.streamComponent().build()
+        streamComponent.inject(this)
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

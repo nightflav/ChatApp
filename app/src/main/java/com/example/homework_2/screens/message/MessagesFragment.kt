@@ -10,7 +10,7 @@ import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -21,22 +21,22 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.homework_2.R
 import com.example.homework_2.databinding.FragmentMessagesBinding
+import com.example.homework_2.di.ViewModelFactory
 import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.utils.Emojis.emojiSetNCS
 import com.example.homework_2.utils.Emojis.getEmojis
 import com.example.homework_2.utils.dp
+import com.example.homework_2.utils.getAppComponent
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class MessagesFragment : Fragment() {
 
     private val args: MessagesFragmentArgs by navArgs()
 
-    private val streamId by lazy {
-        args.streamId
-    }
     private val topicName by lazy {
         args.topicName
     }
@@ -44,12 +44,16 @@ class MessagesFragment : Fragment() {
         args.streamName
     }
 
-    private val viewModel: MessagesViewModel by viewModels {
-        MessagesViewModel.Factory(
-            topicName = topicName,
-            streamId = streamId,
-            streamName = streamName
-        )
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    private val viewModel by lazy {
+        ViewModelProvider(this, viewModelFactory)[MessagesViewModel::class.java]
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val appComponent = getAppComponent()
+        appComponent.streamComponent().build().messageComponent().build().inject(this)
+        super.onCreate(savedInstanceState)
     }
 
     private lateinit var msgAdapter: MessageAdapter
@@ -72,13 +76,13 @@ class MessagesFragment : Fragment() {
         }
         binding.btnTmpRefreshMessages.setOnClickListener {
             lifecycleScope.launch {
-                viewModel.messagesChannel.send(MessagesIntents.UpdateMessagesIntent)
+                viewModel.messagesChannel.send(MessagesIntents.UpdateMessagesIntent(streamName, topicName))
             }
         }
         setupToolbar()
         initRecyclerView()
         lifecycleScope.launch {
-            viewModel.messagesChannel.send(MessagesIntents.InitMessagesIntent)
+            viewModel.messagesChannel.send(MessagesIntents.InitMessagesIntent(streamName, topicName))
         }
 
         viewModel.screenState

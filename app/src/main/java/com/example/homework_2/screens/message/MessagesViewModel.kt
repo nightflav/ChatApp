@@ -1,37 +1,26 @@
 package com.example.homework_2.screens.message
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.homework_2.models.MessageReaction
 import com.example.homework_2.repository.messages_repository.MessageRepositoryImpl
+import com.example.homework_2.repository.messages_repository.MessagesRepository
 import com.example.homework_2.screens.message.MessagesIntents.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MessagesViewModel(
-    private val topicName: String,
-    private val streamName: String,
-    private val streamId: String
+class MessagesViewModel @Inject constructor(
+    private val repo: MessagesRepository,
 ) : ViewModel() {
-
-    class Factory(
-        private val topicName: String,
-        private val streamName: String,
-        private val streamId: String
-    ) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return MessagesViewModel(topicName, streamName, streamId) as T
-        }
-    }
 
     val messagesChannel = Channel<MessagesIntents>()
     private val _screenState: MutableStateFlow<MessagesScreenState> =
         MutableStateFlow(MessagesScreenState.Init)
     val screenState get() = _screenState.asStateFlow()
-    private val repo = MessageRepositoryImpl()
 
 
     init {
@@ -42,8 +31,8 @@ class MessagesViewModel(
         viewModelScope.launch {
             messagesChannel.consumeAsFlow().collect {
                 when (it) {
-                    is InitMessagesIntent -> showAllMessages()
-                    is UpdateMessagesIntent -> updateMessages()
+                    is InitMessagesIntent -> showAllMessages(it.streamName, it.topicName)
+                    is UpdateMessagesIntent -> updateMessages(it.streamName, it.topicName)
                     is SendMessageIntent -> sendMessage(content = it.content)
                     is ChangeReactionStateIntent -> changeReactionState(
                         reaction = it.reaction,
@@ -54,8 +43,8 @@ class MessagesViewModel(
         }
     }
 
-    private suspend fun showAllMessages() {
-        MessageRepositoryImpl().getMessagesByTopic(
+    private suspend fun showAllMessages(streamName: String, topicName: String) {
+        repo.getMessagesByTopic(
             topicName = topicName,
             streamName = streamName
         ).collect {
@@ -77,17 +66,17 @@ class MessagesViewModel(
 
     private suspend fun sendMessage(content: String) {
         repo.sendMessage(
-            topicName = topicName,
+            topicName = "topicName",
             content = content,
-            streamId = streamId
+            streamId = "streamId"
         ).collect {
             _screenState.emit(it)
         }
     }
 
-    private suspend fun updateMessages() {
-        repo.loadMessagesByTopic(topicName, streamName)
-        showAllMessages()
+    private suspend fun updateMessages(streamName: String, topicName: String) {
+        (repo as MessageRepositoryImpl).loadMessagesByTopic(topicName, streamName)
+        showAllMessages(streamName, topicName)
     }
 
 }

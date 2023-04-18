@@ -2,12 +2,15 @@ package com.example.homework_2.repository.contacts_repository
 
 import android.util.Log
 import com.example.homework_2.models.UserProfile
-import com.example.homework_2.network.RetrofitInstance.Companion.chatApi
+import com.example.homework_2.network.ChatApi
 import com.example.homework_2.screens.contacts.ContactsScreenState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
 
-class ContactsRepositoryImpl : ContactsRepository {
+class ContactsRepositoryImpl @Inject constructor(
+    private val chatApi: ChatApi
+) : ContactsRepository {
 
     private var contacts: List<UserProfile>? = null
 

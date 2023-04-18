@@ -1,15 +1,16 @@
 package com.example.homework_2.repository.streams_repository
 
 import com.example.homework_2.models.stream_screen_models.StreamModel
-import com.example.homework_2.network.RetrofitInstance
+import com.example.homework_2.network.ChatApi
 import com.example.homework_2.utils.toTopicList
+import javax.inject.Inject
 
-class StreamsRepositoryImpl : StreamsRepository {
+class StreamsRepositoryImpl @Inject constructor(
+    private val chatApi: ChatApi
+) : StreamsRepository {
 
-    companion object {
-        private var streams: MutableList<StreamModel>? = null
-        private var subsStreams: MutableList<StreamModel>? = null
-    }
+    private var streams: MutableList<StreamModel>? = null
+    private var subsStreams: MutableList<StreamModel>? = null
 
     override suspend fun getAllStreams() = if (streams == null) {
         loadStreams()
@@ -20,12 +21,12 @@ class StreamsRepositoryImpl : StreamsRepository {
 
     private suspend fun loadStreams() {
         val resultStreams = mutableListOf<StreamModel>()
-        val streamsNetwork = RetrofitInstance.chatApi.getStreams().body()?.streams ?: emptyList()
+        val streamsNetwork = chatApi.getStreams().body()?.streams ?: emptyList()
         for (stream in streamsNetwork) {
             val currStream = StreamModel(
                 name = stream.name,
                 isSelected = false,
-                topics = RetrofitInstance.chatApi.getTopics(stream.streamId.toString())
+                topics = chatApi.getTopics(stream.streamId.toString())
                     .body()?.topics?.toTopicList(stream.streamId.toString(), stream.name)
                     ?: emptyList(),
                 id = stream.streamId.toString()
@@ -45,12 +46,12 @@ class StreamsRepositoryImpl : StreamsRepository {
     private suspend fun loadSubscriptions() {
         val resultStreams = mutableListOf<StreamModel>()
         val streamsNetwork =
-            RetrofitInstance.chatApi.getSubscriptions().body()?.subscriptions ?: emptyList()
+            chatApi.getSubscriptions().body()?.subscriptions ?: emptyList()
         for (stream in streamsNetwork) {
             val currStream = StreamModel(
                 name = stream.name,
                 isSelected = false,
-                topics = RetrofitInstance.chatApi.getTopics(stream.streamId.toString())
+                topics = chatApi.getTopics(stream.streamId.toString())
                     .body()!!.topics.toTopicList(stream.streamId.toString(), stream.name),
                 id = stream.streamId.toString()
             )
@@ -67,7 +68,6 @@ class StreamsRepositoryImpl : StreamsRepository {
         topic?.msgCount = count
         topicSubs?.msgCount = count
     }
-
 
     fun changeStreamSelectedState(stream: StreamModel, showSubscribed: Boolean) {
         val streamListToChange = if (showSubscribed) subsStreams else streams
