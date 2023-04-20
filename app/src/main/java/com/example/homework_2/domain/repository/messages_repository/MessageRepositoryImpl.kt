@@ -1,4 +1,4 @@
-package com.example.homework_2.repository.messages_repository
+package com.example.homework_2.domain.repository.messages_repository
 
 import android.util.Log
 import androidx.core.text.HtmlCompat
@@ -9,8 +9,8 @@ import com.example.homework_2.network.ChatApi
 import com.example.homework_2.network.narrow.NarrowItem
 import com.example.homework_2.network.network_models.messages.Message
 import com.example.homework_2.network.network_models.messages.Reaction
-import com.example.homework_2.repository.profile_repository.ProfileRepository
-import com.example.homework_2.repository.profile_repository.ProfileRepositoryImpl
+import com.example.homework_2.domain.repository.profile_repository.ProfileRepository
+import com.example.homework_2.domain.repository.profile_repository.ProfileRepositoryImpl
 import com.example.homework_2.screens.message.MessagesScreenState
 import com.example.homework_2.utils.Emojis
 import com.example.homework_2.utils.MessageTypes

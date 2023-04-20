@@ -1,4 +1,4 @@
-package com.example.homework_2.repository.streams_repository
+package com.example.homework_2.domain.repository.streams_repository
 
 import com.example.homework_2.models.stream_screen_models.StreamModel
 import com.example.homework_2.network.ChatApi

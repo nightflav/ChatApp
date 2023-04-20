@@ -3,8 +3,8 @@ package com.example.homework_2.screens.message
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.homework_2.models.MessageReaction
-import com.example.homework_2.repository.messages_repository.MessageRepositoryImpl
-import com.example.homework_2.repository.messages_repository.MessagesRepository
+import com.example.homework_2.domain.repository.messages_repository.MessageRepositoryImpl
+import com.example.homework_2.domain.repository.messages_repository.MessagesRepository
 import com.example.homework_2.screens.message.MessagesIntents.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +33,7 @@ class MessagesViewModel @Inject constructor(
                 when (it) {
                     is InitMessagesIntent -> showAllMessages(it.streamName, it.topicName)
                     is UpdateMessagesIntent -> updateMessages(it.streamName, it.topicName)
-                    is SendMessageIntent -> sendMessage(content = it.content)
+                    is SendMessageIntent -> sendMessage(content = it.content, streamId = it.streamId, topicName = it.topicName)
                     is ChangeReactionStateIntent -> changeReactionState(
                         reaction = it.reaction,
                         msgId = it.msgId
@@ -64,11 +64,11 @@ class MessagesViewModel @Inject constructor(
             }
     }
 
-    private suspend fun sendMessage(content: String) {
+    private suspend fun sendMessage(content: String, topicName: String, streamId: String) {
         repo.sendMessage(
-            topicName = "topicName",
+            topicName = topicName,
             content = content,
-            streamId = "streamId"
+            streamId = streamId
         ).collect {
             _screenState.emit(it)
         }

@@ -1,4 +1,4 @@
-package com.example.homework_2.repository.messages_repository
+package com.example.homework_2.domain.repository.messages_repository
 
 import com.example.homework_2.screens.message.MessagesScreenState
 import kotlinx.coroutines.flow.Flow

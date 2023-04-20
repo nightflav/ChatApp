@@ -1,4 +1,4 @@
-package com.example.homework_2.repository.contacts_repository
+package com.example.homework_2.domain.repository.contacts_repository
 
 import com.example.homework_2.screens.contacts.ContactsScreenState
 import kotlinx.coroutines.flow.Flow

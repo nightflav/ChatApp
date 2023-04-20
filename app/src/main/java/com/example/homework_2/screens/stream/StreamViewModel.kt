@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.homework_2.models.stream_screen_models.StreamModel
 import com.example.homework_2.models.stream_screen_models.StreamScreenItem
-import com.example.homework_2.repository.streams_repository.StreamsRepository
-import com.example.homework_2.repository.streams_repository.StreamsRepositoryImpl
+import com.example.homework_2.domain.repository.streams_repository.StreamsRepository
+import com.example.homework_2.domain.repository.streams_repository.StreamsRepositoryImpl
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

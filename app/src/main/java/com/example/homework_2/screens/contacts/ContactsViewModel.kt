@@ -2,7 +2,7 @@ package com.example.homework_2.screens.contacts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.homework_2.repository.contacts_repository.ContactsRepository
+import com.example.homework_2.domain.repository.contacts_repository.ContactsRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

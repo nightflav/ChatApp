@@ -43,6 +43,9 @@ class MessagesFragment : Fragment() {
     private val streamName by lazy {
         args.streamName
     }
+    private val streamId by lazy {
+        args.streamId
+    }
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -50,6 +53,7 @@ class MessagesFragment : Fragment() {
     private val viewModel by lazy {
         ViewModelProvider(this, viewModelFactory)[MessagesViewModel::class.java]
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val appComponent = getAppComponent()
         appComponent.streamComponent().build().messageComponent().build().inject(this)
@@ -76,13 +80,23 @@ class MessagesFragment : Fragment() {
         }
         binding.btnTmpRefreshMessages.setOnClickListener {
             lifecycleScope.launch {
-                viewModel.messagesChannel.send(MessagesIntents.UpdateMessagesIntent(streamName, topicName))
+                viewModel.messagesChannel.send(
+                    MessagesIntents.UpdateMessagesIntent(
+                        streamName,
+                        topicName
+                    )
+                )
             }
         }
         setupToolbar()
         initRecyclerView()
         lifecycleScope.launch {
-            viewModel.messagesChannel.send(MessagesIntents.InitMessagesIntent(streamName, topicName))
+            viewModel.messagesChannel.send(
+                MessagesIntents.InitMessagesIntent(
+                    streamName,
+                    topicName
+                )
+            )
         }
 
         viewModel.screenState
@@ -170,7 +184,9 @@ class MessagesFragment : Fragment() {
                 lifecycleScope.launch {
                     viewModel.messagesChannel.send(
                         MessagesIntents.SendMessageIntent(
-                            content = binding.etMessage.text.toString()
+                            content = binding.etMessage.text.toString(),
+                            streamId = streamId,
+                            topicName = topicName
                         )
                     )
                 }
