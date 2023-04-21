@@ -1,0 +1,3 @@
+package com.example.tinkoff_chat_app.models.stream_screen_models
+
+abstract class StreamScreenItem

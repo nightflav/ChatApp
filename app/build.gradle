@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace 'com.example.homework_2'
+    namespace 'com.example.tinkoff_chat_app'
     compileSdk 33
 
     packagingOptions {
@@ -15,7 +15,7 @@ android {
 
 
     defaultConfig {
-        applicationId "com.example.homework_2"
+        applicationId "com.example.tinkoff_chat_app"
         minSdk 26
         targetSdk 33
         versionCode 1

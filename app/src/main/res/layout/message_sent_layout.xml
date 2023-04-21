@@ -21,7 +21,7 @@
         tools:text="Test message"
         android:textColor="@color/white_text" />
 
-    <com.example.homework_2.views.ReactionsViewGroup
+    <com.example.tinkoff_chat_app.views.ReactionsViewGroup
         android:id="@+id/react_sent_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
