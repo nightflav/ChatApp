@@ -1,13 +1,24 @@
 package com.example.tinkoff_chat_app.domain.repository.messages_repository
 
-import com.example.tinkoff_chat_app.network.network_models.messages.Message
-
 interface MessagesRepository {
 
-    suspend fun getMessagesByTopic(
+    suspend fun getMessagesByTopicLocal(
         topicName: String,
-        streamName: String
-    ): List<Message>
+        streamName: String,
+    ): List<MessageDto>?
+
+    suspend fun saveMessages(
+        topicName: String,
+        streamName: String,
+        maxMessagesToSave: Int
+    )
+
+    suspend fun getMessagesByTopicNetwork(
+        topicName: String,
+        streamName: String,
+        amount: Int,
+        lastMsgId: Int?
+    ): List<MessageDto>
 
     suspend fun sendMessage(
         topicName: String,
@@ -24,5 +35,4 @@ interface MessagesRepository {
         msgId: String,
         emojiName: String
     )
-
 }

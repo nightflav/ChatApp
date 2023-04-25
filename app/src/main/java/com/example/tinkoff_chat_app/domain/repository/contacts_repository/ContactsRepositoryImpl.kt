@@ -2,6 +2,7 @@ package com.example.tinkoff_chat_app.domain.repository.contacts_repository
 
 import com.example.tinkoff_chat_app.models.UserProfile
 import com.example.tinkoff_chat_app.network.ChatApi
+import com.example.tinkoff_chat_app.utils.Network.MISSING_AVATAR_URL
 import javax.inject.Inject
 
 class ContactsRepositoryImpl @Inject constructor(
@@ -22,7 +23,7 @@ class ContactsRepositoryImpl @Inject constructor(
                         fullName = member.fullName,
                         status = currUserPresence?.website?.status,
                         avatarSource = member.avatarUrl
-                            ?: "https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png",
+                            ?: MISSING_AVATAR_URL,
                         email = member.email,
                         id = member.userId
                     )
@@ -47,7 +48,7 @@ class ContactsRepositoryImpl @Inject constructor(
     }).filter {
         it.fullName.contains(request) ||
                 it.email.contains(request) ||
-                (it.email + " " + it.fullName).contains(request) ||
-                (it.fullName + " " + it.email).contains(request)
+                (it.email.lowercase() + " " + it.fullName.lowercase()).contains(request.lowercase()) ||
+                (it.fullName.lowercase() + " " + it.email.lowercase()).contains(request.lowercase())
     }
 }

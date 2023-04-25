@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tinkoff_chat_app.R
 import com.example.tinkoff_chat_app.models.MessageReaction
-import com.example.tinkoff_chat_app.models.SingleMessage
+import com.example.tinkoff_chat_app.models.MessageModel
 import com.example.tinkoff_chat_app.utils.Emojis.UNKNOWN_EMOJI
 import com.example.tinkoff_chat_app.utils.MessageTypes.SENDER
 import com.example.tinkoff_chat_app.utils.dp
@@ -26,7 +26,9 @@ class MessageAdapter(
     private val onReactionClickListener: (MessageReaction, String) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var messages: List<SingleMessage> = emptyList()
+    private var messages: List<MessageModel> = emptyList()
+
+    fun getTopMessageId() = messages.firstOrNull() { !it.isDataSeparator }?.message_id
 
     private companion object {
         private const val RECEIVER_TYPE = 0
@@ -81,7 +83,7 @@ class MessageAdapter(
     inner class DataSeparatorViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val dateSepTv = itemView.findViewById<TextView>(R.id.date_separator)
 
-        fun bind(msg: SingleMessage) {
+        fun bind(msg: MessageModel) {
             dateSepTv.text = msg.date
         }
     }
@@ -89,7 +91,7 @@ class MessageAdapter(
     inner class ReceivedMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val msgVg = itemView as MessageViewGroup
 
-        fun bind(msg: SingleMessage) {
+        fun bind(msg: MessageModel) {
             val msgId = msg.message_id
             val reactions = msg.reactions
             msgVg.reactions.setMaxSpace(277f.dp(context).toInt())
@@ -122,7 +124,7 @@ class MessageAdapter(
         private val reactionsSent =
             itemView.findViewById<ReactionsViewGroup>(R.id.react_sent_message)
 
-        fun bind(msg: SingleMessage) {
+        fun bind(msg: MessageModel) {
             val msgId = msg.message_id
             msgSent.text = msg.msg
             val reactions = msg.reactions
@@ -168,7 +170,7 @@ class MessageAdapter(
         }
     }
 
-    fun submitList(streams: List<SingleMessage>) {
+    fun submitList(streams: List<MessageModel>) {
         val diffUtil = DiffCallback(
             messages,
             streams
@@ -179,8 +181,8 @@ class MessageAdapter(
     }
 
     class DiffCallback(
-        private val oldList: List<SingleMessage>,
-        private val newList: List<SingleMessage>
+        private val oldList: List<MessageModel>,
+        private val newList: List<MessageModel>
     ) : DiffUtil.Callback() {
         override fun getOldListSize(): Int = oldList.size
 

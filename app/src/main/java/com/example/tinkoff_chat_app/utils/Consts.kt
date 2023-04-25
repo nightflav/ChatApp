@@ -2,11 +2,25 @@ package com.example.tinkoff_chat_app.utils
 
 import okhttp3.Credentials
 
+object LocalData {
+    const val MESSAGE_TABLE_NAME = "message_table"
+    const val SUBSCRIBED_STREAM_TABLE_NAME = "sub_streams_table"
+    const val UNSUBSCRIBED_STREAM_TABLE_NAME = "streams_table"
+    const val TOPIC_TABLE_NAME = "topics_table"
+    const val SP_PROFILE = "shared_preferences_profile"
+    const val SP_PROFILE_FULLNAME = "sp_fullName"
+    const val SP_PROFILE_ID = "sp_id"
+    const val SP_PROFILE_STATUS = "sp_status"
+}
+
 object Network {
     private const val USER_EMAIL = "iamsoalivenow@gmail.com"
     private const val API_KEY = "wKUjjObJDaru9ErHEf9ryU3yZ7NFvikA"
     const val BASE_URL = "https://tinkoff-android-spring-2023.zulipchat.com/api/v1/"
     val AUTH_KEY: String = Credentials.basic(USER_EMAIL, API_KEY)
+    const val MISSING_AVATAR_URL =
+        "https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png"
+    const val MESSAGES_TO_LOAD = 20
 }
 
 object MessageTypes {
@@ -38,6 +52,20 @@ object Emojis {
 
     fun getEmojis(): List<String> {
         return emojiSetNCS.map { it.getCodeString() }
+    }
+
+    fun getEmojisName(): List<String> {
+        return emojiSetNCS.map { it.name }
+    }
+
+    fun getEmojiByName(name: String): String {
+        return if (name in getEmojisName()) {
+            val index = getEmojisName().indexOf(name)
+            val emoji = emojiSetNCS[index]
+            EmojiNCS(emoji.name, emoji.code).getCodeString()
+        } else {
+            UNKNOWN_EMOJI
+        }
     }
 
     val emojiSetNCS = listOf(

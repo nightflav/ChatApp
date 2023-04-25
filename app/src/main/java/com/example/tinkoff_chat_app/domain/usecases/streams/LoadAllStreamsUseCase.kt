@@ -8,6 +8,6 @@ class LoadAllStreamsUseCase @Inject constructor(
     private val streamRepo: StreamsRepository
 ) {
     suspend operator fun invoke(): List<StreamScreenItem> {
-        return streamRepo.getAllStreams()
+        return streamRepo.getAllStreamsNetwork()
     }
 }

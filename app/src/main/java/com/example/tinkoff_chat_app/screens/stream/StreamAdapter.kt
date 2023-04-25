@@ -1,7 +1,6 @@
 package com.example.tinkoff_chat_app.screens.stream
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -131,7 +130,6 @@ class StreamAdapter(
         fun bind(topic: TopicModel) {
             topicName.text = topic.name
             topicMsgCount.text = topic.msgCount.toString()
-            Log.d("TAGTAGTAG", "${topic.msgCount}")
             when (topic.msgCount) {
                 in 0..50 -> itemView.setBackgroundColor(getColor(context, R.color.color_range_0_50))
                 in 51..100 -> itemView.setBackgroundColor(

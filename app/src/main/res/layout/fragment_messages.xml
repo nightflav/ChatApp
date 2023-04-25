@@ -82,7 +82,7 @@
         app:layout_constraintBottom_toTopOf="@+id/bottom_message_part"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_topic_name" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_topic_name"/>
 
     <LinearLayout
         android:id="@+id/bottom_message_part"

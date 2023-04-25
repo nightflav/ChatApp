@@ -105,7 +105,6 @@ class StreamFragment : Fragment() {
                         showSubscribed
                     )
                 )
-                binding.rvStreams.scrollToPosition(0)
             }
         }
 
@@ -127,7 +126,7 @@ class StreamFragment : Fragment() {
             false
     }
 
-    private fun render(state: ScreenUiState) {
+    private fun render(state: StreamScreenUiState) {
         when {
             state.isStreamsLoading -> {
                 binding.apply {

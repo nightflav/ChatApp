@@ -50,6 +50,7 @@ interface ChatApi {
         @Query("num_before") numBefore: Int = 1000,
         @Query("num_after") numAfter: Int = 0,
         @Query("narrow") narrow: String,
+        @Query("include_anchor") includeAnchor: Boolean = false
     ): Response<MessageResponse>
 
     @POST("messages")

@@ -1,6 +1,9 @@
 package com.example.tinkoff_chat_app.screens.message
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +28,7 @@ import com.example.tinkoff_chat_app.di.ViewModelFactory
 import com.example.tinkoff_chat_app.models.MessageReaction
 import com.example.tinkoff_chat_app.utils.Emojis.emojiSetNCS
 import com.example.tinkoff_chat_app.utils.Emojis.getEmojis
+import com.example.tinkoff_chat_app.utils.Network.MESSAGES_TO_LOAD
 import com.example.tinkoff_chat_app.utils.dp
 import com.example.tinkoff_chat_app.utils.getAppComponent
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -33,7 +37,37 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 class MessagesFragment : Fragment() {
+
+    private fun isNetworkAvailable(context: Context?): Boolean {
+        if (context == null) return false
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                when {
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                        return true
+                    }
+                }
+            }
+        } else {
+            val activeNetworkInfo = connectivityManager.activeNetworkInfo
+            if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
+                return true
+            }
+        }
+        return false
+    }
 
     private val args: MessagesFragmentArgs by navArgs()
 
@@ -46,6 +80,9 @@ class MessagesFragment : Fragment() {
     private val streamId by lazy {
         args.streamId
     }
+
+    private var isLoading = false
+    private var allMessagesLoaded = false
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -81,10 +118,7 @@ class MessagesFragment : Fragment() {
         binding.btnTmpRefreshMessages.setOnClickListener {
             lifecycleScope.launch {
                 viewModel.messagesChannel.send(
-                    MessagesIntents.UpdateMessagesIntent(
-                        streamName,
-                        topicName
-                    )
+                    MessagesIntents.UpdateMessagesIntent
                 )
             }
         }
@@ -94,9 +128,17 @@ class MessagesFragment : Fragment() {
             viewModel.messagesChannel.send(
                 MessagesIntents.InitMessagesIntent(
                     streamName,
-                    topicName
+                    topicName,
+                    streamId
                 )
             )
+            if (isNetworkAvailable(context))
+                viewModel.messagesChannel.send(
+                    MessagesIntents.LoadMessagesIntent(
+                        MESSAGES_TO_LOAD,
+                        msgAdapter.getTopMessageId()?.toInt()
+                    )
+                )
         }
 
         viewModel.screenState
@@ -134,6 +176,34 @@ class MessagesFragment : Fragment() {
         rvLayoutManager.generateDefaultLayoutParams()
         binding.rvChat.layoutManager = rvLayoutManager
         (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
+
+        binding.rvChat.addOnScrollListener(scrollListener)
+    }
+
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+            val adapter = recyclerView.adapter!! as MessageAdapter
+            val messagesLeftOnTop = layoutManager.findFirstCompletelyVisibleItemPosition()
+            val topMsgId = adapter.getTopMessageId()
+
+            if (messagesLeftOnTop <= 5 && !isLoading && !allMessagesLoaded && isNetworkAvailable(
+                    requireContext()
+                )
+            ) {
+                lifecycleScope.launch {
+                    isLoading = true
+                    viewModel.messagesChannel.send(
+                        MessagesIntents.LoadMessagesIntent(
+                            amount = 20,
+                            lastMsgId = topMsgId?.toInt()
+                        )
+                    )
+                }
+
+                super.onScrolled(recyclerView, dx, dy)
+            }
+        }
     }
 
     private fun setReactionOnClickListener(
@@ -185,8 +255,6 @@ class MessagesFragment : Fragment() {
                     viewModel.messagesChannel.send(
                         MessagesIntents.SendMessageIntent(
                             content = binding.etMessage.text.toString(),
-                            streamId = streamId,
-                            topicName = topicName
                         )
                     )
                 }
@@ -211,25 +279,28 @@ class MessagesFragment : Fragment() {
         }
     }
 
-    private fun render(state: MessagesScreenState) {
-        when (state) {
-            is MessagesScreenState.Error -> {
+    private fun render(state: MessageScreenUiState) {
+        when {
+            state.error != null -> {
                 binding.apply {
                     tvMessagesError.isVisible = true
+                    tvMessagesError.text = state.error.message
                     pbMessages.isVisible = false
                     rvChat.isVisible = false
                 }
             }
-            is MessagesScreenState.Success -> {
+
+            state.messages != null -> {
                 binding.apply {
                     tvMessagesError.isVisible = false
                     rvChat.isVisible = true
                     pbMessages.isVisible = false
                     msgAdapter.submitList(state.messages)
+                    isLoading = state.isNewMessagesLoading
+                    allMessagesLoaded = state.allMessagesLoaded
                 }
             }
-            MessagesScreenState.Init -> {}
-            MessagesScreenState.Loading -> {
+            state.isLoading -> {
                 binding.apply {
                     tvMessagesError.isVisible = false
                     rvChat.isVisible = false

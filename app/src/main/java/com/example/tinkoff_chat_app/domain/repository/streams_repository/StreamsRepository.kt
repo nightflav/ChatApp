@@ -4,8 +4,12 @@ import com.example.tinkoff_chat_app.models.stream_screen_models.StreamScreenItem
 
 interface StreamsRepository {
 
-    suspend fun getAllStreams(): List<StreamScreenItem>
+    suspend fun getAllStreamsNetwork(): List<StreamScreenItem>
 
-    suspend fun getSubscribedStreams(): List<StreamScreenItem>
+    suspend fun getSubscribedStreamsNetwork(): List<StreamScreenItem>
+
+    suspend fun getAllStreamsLocal(): List<StreamScreenItem>
+
+    suspend fun getSubscribedStreamsLocal(): List<StreamScreenItem>
 
 }

@@ -1,6 +1,6 @@
 package com.example.tinkoff_chat_app.models
 
-data class SingleMessage(
+data class MessageModel(
     val senderName: String = "",
     val msg: String = "",
     var reactions: MutableList<MessageReaction> = mutableListOf(),
