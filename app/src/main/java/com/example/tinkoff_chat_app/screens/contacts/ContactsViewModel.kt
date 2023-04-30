@@ -17,9 +17,11 @@ class ContactsViewModel @Inject constructor(
 ) : ViewModel() {
 
     val contactsChannel = Channel<ContactsIntents>()
-    private val _screenState: MutableStateFlow<ContactsScreenState> =
-        MutableStateFlow(ContactsScreenState.Init)
+    private val _screenState: MutableStateFlow<ContactsScreenUiState> =
+        MutableStateFlow(ContactsScreenUiState())
     val screenState get() = _screenState.asStateFlow()
+    private val currState
+        get() = screenState.value
 
     init {
         subscribeForIntents()
@@ -28,7 +30,7 @@ class ContactsViewModel @Inject constructor(
     private fun subscribeForIntents() {
         viewModelScope.launch {
             contactsChannel.consumeAsFlow().collect {
-                when(it) {
+                when (it) {
                     is ContactsIntents.SearchForUserIntent -> searchForContact(it.request)
                     is ContactsIntents.InitContacts -> loadContacts()
                 }
@@ -37,18 +39,39 @@ class ContactsViewModel @Inject constructor(
     }
 
     private suspend fun loadContacts() {
-        _screenState.emit(try {
-            ContactsScreenState.Success(loadContactsUseCase())
-        } catch (e: Exception) {
-            ContactsScreenState.Error(e)
-        })
+        _screenState.emit(
+            currState.copy(
+                isLoading = true
+            )
+        )
+        _screenState.emit(
+            try {
+                currState.copy(
+                    contacts = loadContactsUseCase(),
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                currState.copy(
+                    error = e,
+                    isLoading = false
+                )
+            }
+        )
     }
 
     private suspend fun searchForContact(request: String) {
-        _screenState.emit(try {
-            ContactsScreenState.Success(searchForContactUseCase(request))
-        } catch (e: Exception) {
-            ContactsScreenState.Error(e)
-        })
+        _screenState.emit(
+            try {
+                currState.copy(
+                    contacts = searchForContactUseCase(request),
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                currState.copy(
+                    error = e,
+                    isLoading = false
+                )
+            }
+        )
     }
 }

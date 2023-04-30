@@ -13,6 +13,8 @@ import com.example.tinkoff_chat_app.domain.repository.profile_repository.Profile
 import com.example.tinkoff_chat_app.domain.repository.profile_repository.ProfileRepositoryImpl
 import com.example.tinkoff_chat_app.domain.repository.streams_repository.StreamsRepository
 import com.example.tinkoff_chat_app.domain.repository.streams_repository.StreamsRepositoryImpl
+import com.example.tinkoff_chat_app.domain.repository.topics_repository.TopicsRepository
+import com.example.tinkoff_chat_app.domain.repository.topics_repository.TopicsRepositoryImpl
 import com.example.tinkoff_chat_app.network.ChatApi
 import com.example.tinkoff_chat_app.utils.LocalData.SP_PROFILE
 import dagger.Module
@@ -42,12 +44,17 @@ class DataModule {
     fun provideStreamsRepository(
         chatApi: ChatApi,
         streamDao: StreamDao,
-        topicDao: TopicDao
     ): StreamsRepository =
-        StreamsRepositoryImpl(chatApi, streamDao, topicDao)
+        StreamsRepositoryImpl(chatApi, streamDao)
+
+    @Singleton
+    @Provides
+    fun provideTopicsRepository(chatApi: ChatApi, topicDao: TopicDao): TopicsRepository =
+        TopicsRepositoryImpl(chatApi, topicDao)
 
     @Singleton
     @Provides
     fun provideSharedPreferencesForProfile(context: Context): SharedPreferences = context
         .getSharedPreferences(SP_PROFILE, Context.MODE_PRIVATE)
 }
+

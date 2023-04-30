@@ -1,164 +1,133 @@
 package com.example.tinkoff_chat_app.domain.repository.streams_repository
 
-import com.example.tinkoff_chat_app.data.streams.DatabaseStreamModel
-import com.example.tinkoff_chat_app.data.streams.DatabaseSubscribedStreamModel
 import com.example.tinkoff_chat_app.data.streams.StreamDao
-import com.example.tinkoff_chat_app.data.topics.DatabaseTopicModel
-import com.example.tinkoff_chat_app.data.topics.TopicDao
-import com.example.tinkoff_chat_app.models.stream_screen_models.StreamModel
-import com.example.tinkoff_chat_app.models.stream_screen_models.StreamScreenItem
-import com.example.tinkoff_chat_app.models.stream_screen_models.TopicModel
+import com.example.tinkoff_chat_app.models.data_transfer_models.StreamDto
+import com.example.tinkoff_chat_app.models.data_transfer_models.TopicDto
 import com.example.tinkoff_chat_app.network.ChatApi
-import com.example.tinkoff_chat_app.utils.toTopicList
+import com.example.tinkoff_chat_app.utils.Resource
+import com.example.tinkoff_chat_app.utils.StreamMappers.toDatabaseStreamModel
+import com.example.tinkoff_chat_app.utils.StreamMappers.toDatabaseSubscriptionModel
+import com.example.tinkoff_chat_app.utils.StreamMappers.toStreamDtoList
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 class StreamsRepositoryImpl @Inject constructor(
-    private val chatApi: ChatApi, private val streamDao: StreamDao, private val topicDao: TopicDao
+    private val chatApi: ChatApi,
+    private val streamDao: StreamDao,
 ) : StreamsRepository {
 
-    private var lastReadFromSubDB = true
-    private var lastReadFromDB = true
+    override val currStreams = MutableStateFlow<Resource<List<StreamDto>?>>(Resource.Loading())
+    private val streams
+        get() = currStreams.value
 
-    private var streams: MutableList<StreamModel>? = null
-    private var subsStreams: MutableList<StreamModel>? = null
-    private val topicsByStream: MutableMap<String, List<TopicModel>> = mutableMapOf()
+    override suspend fun loadAllStreams(
+        shouldFetch: Boolean,
+        onError: () -> Unit
+    ) {
+        val data = streamDao.getAllStreams().toStreamDtoList()
 
-    override suspend fun getAllStreamsLocal(): List<StreamScreenItem> {
-        val localStreams = streamDao.getAllStreams().toStreamList()
-        streams = localStreams.toMutableList()
-        lastReadFromDB = true
-        return streams!!
-    }
-
-    override suspend fun getSubscribedStreamsLocal(): List<StreamScreenItem> {
-        val localStreams = streamDao.getSubStreams().toStreamList()
-        subsStreams = localStreams.toMutableList()
-        lastReadFromSubDB = true
-        return subsStreams!!
-    }
-
-    override suspend fun getAllStreamsNetwork(): MutableList<StreamModel> {
-        if (lastReadFromDB)
-            loadStreams()
-        return streams!!
-    }
-
-    private suspend fun loadStreams() {
-        val resultStreams = mutableListOf<StreamModel>()
-        val streamsNetwork = chatApi.getStreams().body()?.streams ?: emptyList()
-        for (stream in streamsNetwork) {
-            val currStream = StreamModel(
-                name = stream.name,
-                isSelected = false,
-                topics = null,
-                id = stream.streamId.toString()
+        currStreams.emit(
+            Resource.Success(
+                data = data
             )
-            resultStreams.add(currStream)
-        }
-        streams = resultStreams
-        lastReadFromDB = false
-    }
+        )
 
-    override suspend fun getSubscribedStreamsNetwork(): MutableList<StreamModel> {
-        if (lastReadFromSubDB)
-            loadSubscriptions()
-        return subsStreams!!
-    }
-
-    private suspend fun loadSubscriptions() {
-        val resultStreams = mutableListOf<StreamModel>()
-        val streamsNetwork = chatApi.getSubscriptions().body()?.subscriptions ?: emptyList()
-        for (stream in streamsNetwork) {
-            val currStream = StreamModel(
-                name = stream.name,
-                isSelected = false,
-                topics = null,
-                id = stream.streamId.toString()
+        if (shouldFetch) {
+            currStreams.emit(
+                Resource.Loading()
             )
-            resultStreams.add(currStream)
-        }
-        subsStreams = resultStreams
-        lastReadFromSubDB = false
-    }
-
-    fun setTopicMsgCount(topicName: String, count: Int, streamName: String) {
-        val topic =
-            streams?.firstOrNull { it.name == streamName }?.topics?.firstOrNull { it.name == topicName }
-        val topicSubs =
-            subsStreams?.firstOrNull { it.name == streamName }?.topics?.firstOrNull { it.name == topicName }
-        topic?.msgCount = count
-        topicSubs?.msgCount = count
-    }
-
-    suspend fun changeStreamSelectedState(stream: StreamModel, showSubscribed: Boolean) {
-        val streamListToChange = if (showSubscribed) subsStreams else streams
-
-        if (streamListToChange?.map { it.id }?.contains(stream.id) == true) {
-            val newStream =
-                stream.copy(
-                    isSelected = !stream.isSelected,
-                    topics = getStreamTopics(from = stream) ?: emptyList()
-                )
-            streamListToChange[streamListToChange.map { it.name }.indexOf(stream.name)] = newStream
-
-            if (showSubscribed)
-                streamDao.addStream(newStream.toDBSubStream())
-            else
-                streamDao.addStream(newStream.toDBStream())
-        } else return
-    }
-
-    private suspend fun getStreamTopics(from: StreamModel): List<TopicModel>? {
-        val topics = if (topicsByStream[from.name].isNullOrEmpty())
             try {
-                val topicsNetwork =
-                    chatApi.getTopics(from.id).body()?.topics?.toTopicList(from.id, from.name)
-                for (topic in topicsNetwork!!)
-                    topicDao.addTopic(topic.toDBTopic())
-                topicsByStream[from.name] = topicsNetwork
-                topicsNetwork
-            } catch (_: Exception) {
-                topicDao.getTopics(from.id).toTopicList()
-            } else {
-            topicsByStream[from.name]
+                val networkData = chatApi.getStreams().body()!!.streams
+                streamDao.deleteAllStreams()
+                streamDao.addStreams(
+                    networkData.toStreamDtoList().map { it.toDatabaseStreamModel() })
+                currStreams.emit(
+                    Resource.Success(
+                        data = networkData.toStreamDtoList()
+                    )
+                )
+            } catch (e: Exception) {
+                onError()
+                currStreams.emit(
+                    Resource.Success(
+                        data = data
+                    )
+                )
+            }
+        } else {
+            currStreams.emit(
+                Resource.Success(
+                    data = data
+                )
+            )
         }
-        return topics
     }
 
-    private suspend fun List<DatabaseStreamModel>.toStreamList() = this.map {
-        StreamModel(
-            name = it.name,
-            id = it.id,
-            isSelected = it.isSelected,
-            topics = topicDao.getTopics(it.name).toTopicList()
+    override suspend fun loadAllSubscriptions(
+        shouldFetch: Boolean,
+        onError: () -> Unit
+    ) {
+        val data = streamDao.getAllSubscriptions().toStreamDtoList()
+
+        currStreams.emit(
+            Resource.Success(
+                data = data
+            )
+        )
+
+        if (shouldFetch) {
+            currStreams.emit(
+                Resource.Loading()
+            )
+            try {
+                val networkData = chatApi.getSubscriptions().body()!!.subscriptions
+                streamDao.deleteAllStreams()
+                streamDao.addSubscriptions(
+                    networkData.toStreamDtoList().map { it.toDatabaseSubscriptionModel() }
+                )
+                currStreams.emit(
+                    Resource.Success(
+                        data = networkData.toStreamDtoList()
+                    )
+                )
+            } catch (e: Exception) {
+                onError()
+                currStreams.emit(
+                    Resource.Success(
+                        data = data
+                    )
+                )
+            }
+        } else {
+            currStreams.emit(
+                Resource.Success(
+                    data = data
+                )
+            )
+        }
+    }
+
+    override suspend fun updateStreamTopics(streamId: Int, newTopics: List<TopicDto>) {
+        val streamToUpdate: StreamDto?
+        val streamsList: List<StreamDto>
+        when (streams) {
+            is Resource.Success -> {
+                streamsList = (streams as Resource.Success<List<StreamDto>?>).data!!
+            }
+            else -> return
+        }
+        streamToUpdate = streamsList.firstOrNull { it.id == streamId }
+        if (streamToUpdate == null) return
+        val newList = streamsList.map {
+            if (it.id == streamId) streamToUpdate.copy(
+                topics = newTopics,
+                isSelected = !streamToUpdate.isSelected
+            ) else it
+        }
+        currStreams.emit(
+            (streams as Resource.Success<List<StreamDto>?>).copy(
+                data = newList
+            )
         )
     }
-
-    private fun List<DatabaseTopicModel>?.toTopicList() = this?.map {
-        TopicModel(
-            name = it.name,
-            msgCount = it.msgCount,
-            parentId = it.parentId,
-            id = it.id,
-            parentName = it.parentName
-        )
-    }
-
-    private fun StreamModel.toDBStream() = DatabaseStreamModel(
-        name = this.name, id = this.id, isSelected = this.isSelected
-    )
-
-    private fun StreamModel.toDBSubStream() = DatabaseSubscribedStreamModel(
-        name = this.name, id = this.id, isSelected = this.isSelected
-    )
-
-    private fun TopicModel.toDBTopic() = DatabaseTopicModel(
-        id = id,
-        name = name,
-        msgCount = msgCount,
-        parentId = parentId,
-        parentName = parentName
-    )
 }
-
-

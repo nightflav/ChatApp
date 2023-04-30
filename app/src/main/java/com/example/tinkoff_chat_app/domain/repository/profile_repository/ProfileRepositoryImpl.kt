@@ -1,9 +1,10 @@
 package com.example.tinkoff_chat_app.domain.repository.profile_repository
 
 import android.content.SharedPreferences
-import com.example.tinkoff_chat_app.models.UserProfile
+import android.util.Log
+import com.example.tinkoff_chat_app.models.ui_models.UserProfile
 import com.example.tinkoff_chat_app.network.ChatApi
-import com.example.tinkoff_chat_app.network.network_models.users.Member
+import com.example.tinkoff_chat_app.models.network_models.users.Member
 import com.example.tinkoff_chat_app.screens.profile.ProfileScreenState
 import com.example.tinkoff_chat_app.utils.LocalData.SP_PROFILE_FULLNAME
 import com.example.tinkoff_chat_app.utils.LocalData.SP_PROFILE_ID
@@ -28,10 +29,12 @@ class ProfileRepositoryImpl @Inject constructor(
             val id = profile!!.id
             val status = profile!!.status
             with(spProfile.edit()) {
+                Log.d("TAGTAGTAG", "saveing profile $profile")
                 putString(SP_PROFILE_FULLNAME, fullName)
                 putInt(SP_PROFILE_ID, id)
                 putString(SP_PROFILE_STATUS, status)
-            }
+            }.apply()
+            Log.d("TAGTAGTAG", "saveing profile ${spProfile.all}")
         }
         return profile!!
     }

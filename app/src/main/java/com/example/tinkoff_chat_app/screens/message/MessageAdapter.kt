@@ -10,9 +10,11 @@ import android.widget.TextView
 import androidx.core.view.children
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.tinkoff_chat_app.R
-import com.example.tinkoff_chat_app.models.MessageReaction
-import com.example.tinkoff_chat_app.models.MessageModel
+import com.example.tinkoff_chat_app.models.ui_models.MessageModel
+import com.example.tinkoff_chat_app.models.ui_models.MessageReaction
 import com.example.tinkoff_chat_app.utils.Emojis.UNKNOWN_EMOJI
 import com.example.tinkoff_chat_app.utils.MessageTypes.SENDER
 import com.example.tinkoff_chat_app.utils.dp
@@ -92,6 +94,11 @@ class MessageAdapter(
         private val msgVg = itemView as MessageViewGroup
 
         fun bind(msg: MessageModel) {
+            Glide.with(context)
+                .load(msg.avatarUri)
+                .transform(RoundedCorners(16))
+                .centerCrop()
+                .into(msgVg.image)
             val msgId = msg.message_id
             val reactions = msg.reactions
             msgVg.reactions.setMaxSpace(277f.dp(context).toInt())

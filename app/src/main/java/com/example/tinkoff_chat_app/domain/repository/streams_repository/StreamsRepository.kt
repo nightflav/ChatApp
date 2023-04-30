@@ -1,15 +1,27 @@
 package com.example.tinkoff_chat_app.domain.repository.streams_repository
 
-import com.example.tinkoff_chat_app.models.stream_screen_models.StreamScreenItem
+import com.example.tinkoff_chat_app.models.data_transfer_models.StreamDto
+import com.example.tinkoff_chat_app.models.data_transfer_models.TopicDto
+import com.example.tinkoff_chat_app.utils.Resource
+import kotlinx.coroutines.flow.MutableStateFlow
 
 interface StreamsRepository {
 
-    suspend fun getAllStreamsNetwork(): List<StreamScreenItem>
+    val currStreams: MutableStateFlow<Resource<List<StreamDto>?>>
 
-    suspend fun getSubscribedStreamsNetwork(): List<StreamScreenItem>
+    suspend fun loadAllStreams(
+        shouldFetch: Boolean,
+        onError: () -> Unit
+    )
 
-    suspend fun getAllStreamsLocal(): List<StreamScreenItem>
+    suspend fun loadAllSubscriptions(
+        shouldFetch: Boolean,
+        onError: () -> Unit
+    )
 
-    suspend fun getSubscribedStreamsLocal(): List<StreamScreenItem>
+    suspend fun updateStreamTopics(
+        streamId: Int,
+        newTopics: List<TopicDto>,
+    )
 
 }

@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -32,9 +33,11 @@ class StreamFragment : Fragment() {
         StreamAdapter(requireContext(), findNavController()) {
             lifecycleScope.launch {
                 viewModel.streamChannel.send(
-                    StreamIntents.UpdateStreamSelectedStateIntent(
+                    StreamIntents.ShowCurrentStreamTopicsIntent(
                         it
-                    )
+                    ) {
+                        showErrorToast("An error occurred while loading topics...")
+                    }
                 )
             }
         }
@@ -85,8 +88,10 @@ class StreamFragment : Fragment() {
                     val request = it.toString()
                     viewModel.streamChannel.send(
                         StreamIntents.SearchForStreamIntent(
-                            request = request
-                        )
+                            request = request,
+                        ) {
+                            showErrorToast("An error occurred while searching...")
+                        }
                     )
                 }
             }
@@ -103,7 +108,9 @@ class StreamFragment : Fragment() {
                 viewModel.streamChannel.send(
                     StreamIntents.ShowCurrentStreamsIntent(
                         showSubscribed
-                    )
+                    ) {
+                        showErrorToast("An error occurred while loading...")
+                    }
                 )
             }
         }
@@ -122,8 +129,7 @@ class StreamFragment : Fragment() {
         val rvLayoutManager = LinearLayoutManager(context)
         rvLayoutManager.generateDefaultLayoutParams()
         binding.rvStreams.layoutManager = rvLayoutManager
-        (binding.rvStreams.itemAnimator as SimpleItemAnimator).supportsChangeAnimations =
-            false
+        (binding.rvStreams.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
     }
 
     private fun render(state: StreamScreenUiState) {
@@ -163,4 +169,6 @@ class StreamFragment : Fragment() {
         _binding = null
         super.onDestroyView()
     }
+
+    private fun showErrorToast(message: String) = Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 }

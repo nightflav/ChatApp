@@ -4,13 +4,14 @@ import okhttp3.Credentials
 
 object LocalData {
     const val MESSAGE_TABLE_NAME = "message_table"
-    const val SUBSCRIBED_STREAM_TABLE_NAME = "sub_streams_table"
-    const val UNSUBSCRIBED_STREAM_TABLE_NAME = "streams_table"
+    const val STREAM_TABLE_NAME = "streams_table"
+    const val SUBSCRIPTION_TABLE_NAME = "sub_streams_table"
     const val TOPIC_TABLE_NAME = "topics_table"
     const val SP_PROFILE = "shared_preferences_profile"
     const val SP_PROFILE_FULLNAME = "sp_fullName"
     const val SP_PROFILE_ID = "sp_id"
     const val SP_PROFILE_STATUS = "sp_status"
+    const val MESSAGES_TO_SAVE = 50
 }
 
 object Network {
@@ -26,7 +27,6 @@ object Network {
 object MessageTypes {
     const val SENDER = "sender"
     const val RECEIVER = "receiver"
-    const val DATA_SEPARATOR = "data separator"
 }
 
 object Status {

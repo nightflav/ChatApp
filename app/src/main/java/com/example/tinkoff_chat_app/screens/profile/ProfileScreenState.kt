@@ -1,6 +1,6 @@
 package com.example.tinkoff_chat_app.screens.profile
 
-import com.example.tinkoff_chat_app.models.UserProfile
+import com.example.tinkoff_chat_app.models.ui_models.UserProfile
 
 sealed class ProfileScreenState {
     object Loading : ProfileScreenState()

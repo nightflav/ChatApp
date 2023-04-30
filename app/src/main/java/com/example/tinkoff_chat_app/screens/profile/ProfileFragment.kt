@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide
 import com.example.tinkoff_chat_app.R
 import com.example.tinkoff_chat_app.databinding.FragmentProfileBinding
 import com.example.tinkoff_chat_app.di.ViewModelFactory
-import com.example.tinkoff_chat_app.models.UserProfile
+import com.example.tinkoff_chat_app.models.ui_models.UserProfile
 import com.example.tinkoff_chat_app.utils.Status
 import com.example.tinkoff_chat_app.utils.getAppComponent
 import kotlinx.coroutines.flow.launchIn

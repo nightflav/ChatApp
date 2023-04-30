@@ -1,14 +1,14 @@
 package com.example.tinkoff_chat_app.network
 
 import com.example.tinkoff_chat_app.*
-import com.example.tinkoff_chat_app.network.network_models.messages.MessageResponse
-import com.example.tinkoff_chat_app.network.network_models.streams.StreamsResponse
-import com.example.tinkoff_chat_app.network.network_models.subscriptions.SubscriptionsResponse
-import com.example.tinkoff_chat_app.network.network_models.topics.TopicsResponse
-import com.example.tinkoff_chat_app.network.network_models.users.Member
-import com.example.tinkoff_chat_app.network.network_models.users.UsersResponse
-import com.example.tinkoff_chat_app.network.network_models.users.presence.UserPresenceResponse
-import com.example.tinkoff_chat_app.network.network_models.users.presence.allUsersPresence.AllUsersPresenceResponse
+import com.example.tinkoff_chat_app.models.network_models.messages.MessageResponse
+import com.example.tinkoff_chat_app.models.network_models.streams.StreamsResponse
+import com.example.tinkoff_chat_app.models.network_models.subscriptions.SubscriptionsResponse
+import com.example.tinkoff_chat_app.models.network_models.topics.TopicsResponse
+import com.example.tinkoff_chat_app.models.network_models.users.Member
+import com.example.tinkoff_chat_app.models.network_models.users.UsersResponse
+import com.example.tinkoff_chat_app.models.network_models.users.presence.UserPresenceResponse
+import com.example.tinkoff_chat_app.models.network_models.users.presence.allUsersPresence.AllUsersPresenceResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -24,7 +24,7 @@ interface ChatApi {
 
     @GET("users/me/{stream_id}/topics")
     suspend fun getTopics(
-        @Path("stream_id") streamId: String,
+        @Path("stream_id") streamId: Int,
     ): Response<TopicsResponse>
 
     @GET("users")

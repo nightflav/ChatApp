@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.tinkoff_chat_app.R
 import com.example.tinkoff_chat_app.utils.Status
-import com.example.tinkoff_chat_app.models.UserProfile
+import com.example.tinkoff_chat_app.models.ui_models.UserProfile
 
 class ContactsAdapter(private val context: Context) :
     RecyclerView.Adapter<ContactsAdapter.ContactViewHolder>() {

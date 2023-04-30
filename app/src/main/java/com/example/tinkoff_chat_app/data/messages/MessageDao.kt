@@ -1,26 +1,29 @@
 package com.example.tinkoff_chat_app.data.messages
 
 import androidx.room.*
+import com.example.tinkoff_chat_app.models.db_models.DatabaseMessageModel
 import com.example.tinkoff_chat_app.utils.LocalData.MESSAGE_TABLE_NAME
 
 @Dao
 interface MessageDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addMessage(message: DatabaseMessageModel)
+    suspend fun insertAll(messages: List<DatabaseMessageModel>)
 
-    @Query(value = "SELECT * FROM $MESSAGE_TABLE_NAME" +
-            " WHERE topicName = :fromTopic" +
-            " AND streamName = :fromStream")
-    suspend fun readAllMessages(fromTopic: String, fromStream: String): List<DatabaseMessageModel>
-
-    @Query("SELECT COUNT(id) FROM $MESSAGE_TABLE_NAME")
-    suspend fun getItemCount(): Int
-
-    @Query("DELETE FROM $MESSAGE_TABLE_NAME WHERE topicStreamId = :topicStreamId")
-    suspend fun deleteAllTopicStreamMessages(topicStreamId: String)
+    @Query(
+        "SELECT * FROM $MESSAGE_TABLE_NAME" +
+                " WHERE topicName = :fromTopic" +
+                " AND streamName = :fromStream"
+    )
+    suspend fun getMessages(fromTopic: String, fromStream: String): List<DatabaseMessageModel>
 
     @Delete
     suspend fun deleteMessage(message: DatabaseMessageModel)
+
+    @Query("DELETE FROM $MESSAGE_TABLE_NAME" +
+            " WHERE topicName = :fromTopic" +
+            " AND streamName = :fromStream"
+    )
+    suspend fun deleteMessagesOfCurrentTopic(fromTopic: String, fromStream: String)
 
 }

@@ -1,28 +1,30 @@
 package com.example.tinkoff_chat_app.screens.message
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tinkoff_chat_app.domain.repository.messages_repository.MessagesRepository
 import com.example.tinkoff_chat_app.domain.repository.messages_repository.MessagesRepositoryImpl
-import com.example.tinkoff_chat_app.domain.usecases.messages.*
-import com.example.tinkoff_chat_app.models.MessageModel
-import com.example.tinkoff_chat_app.models.MessageReaction
+import com.example.tinkoff_chat_app.domain.usecases.messages.ChangeReactionSelectedStateUseCase
+import com.example.tinkoff_chat_app.domain.usecases.messages.SendMessageUseCase
+import com.example.tinkoff_chat_app.domain.usecases.messages.SubscribeForMessagesUseCase
+import com.example.tinkoff_chat_app.models.ui_models.MessageReaction
 import com.example.tinkoff_chat_app.screens.message.MessagesIntents.*
-import com.example.tinkoff_chat_app.utils.Emojis
-import com.example.tinkoff_chat_app.utils.Emojis.getEmojiByName
+import com.example.tinkoff_chat_app.utils.Network.MESSAGES_TO_LOAD
+import com.example.tinkoff_chat_app.utils.Resource
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MessagesViewModel @Inject constructor(
-    private val loadMessagesByTopicUseCase: LoadMessagesByTopicUseCase,
+    private val subscribeForMessagesUseCase: SubscribeForMessagesUseCase,
     private val sendMessageUseCase: SendMessageUseCase,
     private val changeReactionSelectedStateUseCase: ChangeReactionSelectedStateUseCase,
-    private val initMessagesUseCase: InitMessagesUseCase,
-    private val saveMessagesUseCase: SaveMessagesUseCase,
     private val messageRepo: MessagesRepository
 ) : ViewModel() {
 
@@ -33,10 +35,13 @@ class MessagesViewModel @Inject constructor(
 
     private val currState
         get() = screenState.value
+
     private val topicName
         get() = currState.topic!!
+
     private val streamName
         get() = currState.stream!!
+
     private val streamId
         get() = currState.streamId!!
 
@@ -49,11 +54,23 @@ class MessagesViewModel @Inject constructor(
             messagesChannel.consumeAsFlow()
                 .collect {
                     when (it) {
-                        is InitMessagesIntent -> initMessages(
-                            streamName = it.streamName,
-                            topicName = it.topicName,
-                            streamId = it.streamId
-                        )
+                        is InitMessagesIntent -> {
+                            _screenState.emit(
+                                currState.copy(
+                                    streamId = it.streamName,
+                                    stream = it.streamName,
+                                    topic = it.topicName
+                                )
+                            )
+                            subscribeForMessages()
+                            messageRepo.loadMessagesWhenStart(
+                                topicName = it.topicName,
+                                streamName = it.streamName,
+                                amount = MESSAGES_TO_LOAD,
+                                lastMsgId = null,
+                                shouldFetch = true
+                            )
+                        }
                         is UpdateMessagesIntent -> updateMessages()
                         is SendMessageIntent -> sendMessage(
                             content = it.content,
@@ -62,92 +79,43 @@ class MessagesViewModel @Inject constructor(
                             reaction = it.reaction,
                             msgId = it.msgId
                         )
-                        is LoadMessagesIntent -> loadMoreMessages(
-                            amount = it.amount,
-                            lastMessageId = it.lastMsgId
-                        )
-                        is SaveMessagesIntent -> saveMessagesUseCase(
-                            maxMessagesToSave = 50,
-                            streamName = streamName,
-                            topicName = topicName
+                        is LoadMessagesIntent -> messageRepo.loadNewMessages(
+                            topicName,
+                            streamName,
+                            it.amount,
+                            it.lastMsgId,
                         )
                     }
                 }
         }
     }
 
-    private suspend fun initMessages(
-        streamName: String,
-        topicName: String,
-        streamId: String
-    ) {
-        _screenState.emit(
-            currState.copy(
-                topic = topicName,
-                stream = streamName,
-                streamId = streamId
-            )
-        )
-
-        try {
-            _screenState.emit(
-                currState.copy(
-                    messages = initMessagesUseCase(streamName, topicName)?.transformTextToEmojis(),
-                    isLoading = false,
-                )
-            )
-        } catch (e: Exception) {
-            _screenState.emit(
-                currState.copy(
-                    isLoading = true
-                )
-            )
+    @OptIn(FlowPreview::class)
+    private suspend fun subscribeForMessages() {
+        viewModelScope.launch {
+            subscribeForMessagesUseCase()
+                .debounce(50L)
+                .collect {
+                Log.d("TAGTAGTAG", "COLLECTED")
+                when (it) {
+                    is Resource.Error -> {
+                        _screenState.emit(
+                            currState.copy(
+                                error = it.error
+                            )
+                        )
+                    }
+                    is Resource.Loading -> {}
+                    is Resource.Success -> {
+                        _screenState.emit(
+                            currState.copy(
+                                messages = it.data
+                            )
+                        )
+                    }
+                }
+            }
         }
-    }
-
-    private suspend fun loadMoreMessages(
-        amount: Int,
-        lastMessageId: Int?
-    ) {
-        _screenState.emit(
-            currState.copy(
-                isNewMessagesLoading = true
-            )
-        )
-        loadMessages(streamName, topicName, amount, lastMessageId)
-    }
-
-    private suspend fun loadMessages(
-        streamName: String,
-        topicName: String,
-        amount: Int,
-        lastMessageId: Int?
-    ) {
-        val state = try {
-            val loadedMessages =
-                loadMessagesByTopicUseCase(
-                    streamName = streamName,
-                    topicName = topicName,
-                    amount = amount,
-                    lastMsgId = lastMessageId
-                )
-            val allMessagesLoaded = loadedMessages == currState.messages
-            currState.copy(
-                messages = loadedMessages.transformTextToEmojis(),
-                isLoading = false,
-                isNewMessagesLoading = false,
-                allMessagesLoaded = allMessagesLoaded
-            )
-        } catch (e: Exception) {
-            if (currState.messages == null) {
-                currState.copy(
-                    isLoading = false,
-                    error = e
-                )
-            } else currState
-        }
-        _screenState.emit(state)
-        saveMessagesUseCase(streamName, topicName, 50)
     }
 
     private suspend fun changeReactionState(reaction: MessageReaction, msgId: String) {
@@ -182,26 +150,6 @@ class MessagesViewModel @Inject constructor(
 
     private suspend fun updateMessages() {
         (messageRepo as MessagesRepositoryImpl).reloadMessages(streamName, topicName)
-        loadMessages(streamName, streamId, 1000, null)
-    }
-
-    private fun List<MessageModel>.transformTextToEmojis() = this.map {
-        it.copy(
-            msg = it.msg.replaceWithEmojis()
-        )
-    }
-
-    private fun String.replaceWithEmojis(): String {
-        val regex = Regex(pattern = ":[A-Za-z_]+:")
-        val newMessage = this.replace(regex) {
-            val emojiName = it.value.removePrefix(":").removeSuffix(":")
-            if (emojiName in Emojis.getEmojisName()) {
-                getEmojiByName(emojiName)
-            } else {
-                it.value
-            }
-        }
-        return newMessage
     }
 }
 

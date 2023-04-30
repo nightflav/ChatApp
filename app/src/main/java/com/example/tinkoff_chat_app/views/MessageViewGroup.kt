@@ -23,7 +23,7 @@ class MessageViewGroup
     defStyleAttr,
     defStyleRes
 ) {
-    private val image: ImageView by lazy { findViewById(R.id.profile_image) }
+    val image: ImageView by lazy { findViewById(R.id.profile_image) }
     val message: TextView by lazy { findViewById(R.id.message_text) }
     val name: TextView by lazy { findViewById(R.id.sender_name) }
     private val linearLayout: LinearLayout by lazy { findViewById(R.id.msg_vg_text) }

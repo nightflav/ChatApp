@@ -2,10 +2,13 @@ package com.example.tinkoff_chat_app.screens.stream
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tinkoff_chat_app.domain.usecases.streams.*
-import com.example.tinkoff_chat_app.models.stream_screen_models.StreamModel
-import com.example.tinkoff_chat_app.models.stream_screen_models.StreamScreenItem
-import com.example.tinkoff_chat_app.models.stream_screen_models.TopicModel
+import com.example.tinkoff_chat_app.domain.repository.streams_repository.StreamsRepository
+import com.example.tinkoff_chat_app.domain.repository.topics_repository.TopicsRepository
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamModel
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamScreenItem
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.TopicModel
+import com.example.tinkoff_chat_app.utils.Resource
+import com.example.tinkoff_chat_app.utils.StreamMappers.toStreamModelList
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -13,11 +16,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class StreamViewModel @Inject constructor(
-    private val loadAllStreamsUseCase: LoadAllStreamsUseCase,
-    private val loadSubStreamsUseCase: LoadSubStreamsUseCase,
-    private val changeStreamSelectedStateUseCase: ChangeStreamSelectedStateUseCase,
-    private val loadAllStreamsLocalUseCase: LoadAllStreamsLocalUseCase,
-    private val loadSubStreamsLocalUseCase: LoadSubStreamsLocalUseCase
+    private val streamsRepo: StreamsRepository,
+    private val topicsRepo: TopicsRepository
 ) : ViewModel() {
 
     val streamChannel = Channel<StreamIntents>()
@@ -33,9 +33,6 @@ class StreamViewModel @Inject constructor(
             streamChannel.send(
                 StreamIntents.InitStreamsIntent
             )
-            streamChannel.send(
-                StreamIntents.ShowCurrentStreamsIntent(true)
-            )
         }
     }
 
@@ -45,204 +42,134 @@ class StreamViewModel @Inject constructor(
             streamChannel.consumeAsFlow()
                 .debounce(100L)
                 .collect {
+                    when (it) {
+                        StreamIntents.InitStreamsIntent -> {
+                            subscribeForStreams()
+                            streamsRepo.loadAllSubscriptions(true) {}
+                        }
+                        is StreamIntents.SearchForStreamIntent -> {
+                            _screenState.emit(
+                                currState.copy(
+                                    request = it.request
+                                )
+                            )
+                            updateUi(onError = it.onError)
+                        }
+                        is StreamIntents.ShowCurrentStreamTopicsIntent -> {
+                            changeStreamSelectedState(it.stream, it.onError)
+                        }
+                        is StreamIntents.ShowCurrentStreamsIntent -> {
+                            _screenState.emit(
+                                currState.copy(
+                                    showSubs = it.showSubscribed
+                                )
+                            )
+                            updateUi(onError = it.onError)
+                        }
+                    }
+                }
+        }
+    }
+
+    private suspend fun updateUi(onError: () -> Unit) {
+        if (currState.showSubs)
+            streamsRepo.loadAllSubscriptions(true) { onError() }
+        else
+            streamsRepo.loadAllStreams(true) { onError() }
+    }
+
+    private suspend fun subscribeForStreams() {
+        viewModelScope.launch {
+            streamsRepo.currStreams.collect {
                 when (it) {
-                    StreamIntents.InitStreamsIntent -> {
-                        initStreams()
+                    is Resource.Success -> {
+                        if (currState.streams != it.data && it.data!!.isNotEmpty())
+                            _screenState.emit(
+                                currState.copy(
+                                    streams = it.data.toStreamModelList()
+                                        .applySearchFilter(currState.request)
+                                        .toListToShow(),
+                                    isStreamsLoading = false
+                                )
+                            )
                     }
-                    is StreamIntents.ShowCurrentStreamsIntent -> {
-                        showCurrentStreams(it.showSubscribed)
+                    is Resource.Error -> {
+                        _screenState.emit(
+                            currState.copy(
+                                error = it.error,
+                                isStreamsLoading = false
+                            )
+                        )
                     }
-                    is StreamIntents.SearchForStreamIntent -> {
-                        searchForStream(it.request)
-                    }
-                    is StreamIntents.UpdateStreamSelectedStateIntent -> {
-                        changeStreamSelectedState(it.stream)
+                    is Resource.Loading -> {
+                        if (currState.streams.isNullOrEmpty())
+                            _screenState.emit(
+                                currState.copy(
+                                    isStreamsLoading = true
+                                )
+                            )
                     }
                 }
             }
         }
     }
-
-    private suspend fun initStreams() {
-        _screenState.emit(
-            currState.copy(
-                showSubs = true,
-                streams = loadSubStreamsLocalUseCase().applySearchFilter(
-                    currState.request
-                )
-                    .toListToShow(),
-                isStreamsLoading = false
-            )
-        )
-        if (currState.streams.isNullOrEmpty()) {
-            _screenState.emit(
-                currState.copy(
-                    isStreamsLoading = true
-                )
-            )
-        }
-    }
-
-    private suspend fun changeStreamSelectedState(stream: StreamModel) {
-        viewModelScope.launch {
-            _screenState.emit(
-                currState.copy(
-                    streams = currState.streams?.applySearchFilter(currState.request)
-                        ?.toListToShow()
-                        .addLoadingTopicsShimmer(stream)
-                )
-            )
-        }
-        changeStreamSelectedStateUseCase(stream, currState.showSubs)
-        showCurrentStreams(currState.showSubs)
-    }
-
-    private suspend fun showCurrentStreams(showSubscribed: Boolean) {
-        if (currState.streams == null) {
-            _screenState.emit(
-                currState.copy(
-                    isStreamsLoading = true
-                )
-            )
-        }
-
-        if (showSubscribed)
-            loadSubscribedStream()
-        else
-            loadAllStreams()
-    }
-
-    private suspend fun loadAllStreams() {
-        try {
-            val loadedStreams = loadAllStreamsUseCase()
-            _screenState.emit(
-                currState.copy(
-                    isStreamsLoading = false,
-                    streams = loadedStreams.applySearchFilter(currState.request).toListToShow(),
-                    showSubs = false
-                )
-            )
-        } catch (e: Throwable) {
-            _screenState.emit(
-                currState.copy(
-                    showSubs = false,
-                    streams = loadAllStreamsLocalUseCase().applySearchFilter(currState.request)
-                        .toListToShow(),
-                    isStreamsLoading = false
-                )
-            )
-            if (currState.streams == null) {
-                _screenState.emit(
-                    currState.copy(
-                        isStreamsLoading = false,
-                        error = e
-                    )
-                )
-            }
-        }
-    }
-
-    private suspend fun loadSubscribedStream() {
-        try {
-            val loadedStreams = loadSubStreamsUseCase()
-            _screenState.emit(
-                currState.copy(
-                    isStreamsLoading = false,
-                    streams = loadedStreams.applySearchFilter(currState.request).toListToShow(),
-                    showSubs = true
-                )
-            )
-        } catch (e: Throwable) {
-            _screenState.emit(
-                currState.copy(
-                    showSubs = true,
-                    streams = loadSubStreamsLocalUseCase().applySearchFilter(
-                        currState.request
-                    )
-                        .toListToShow(),
-                    isStreamsLoading = false
-                )
-            )
-            if (currState.streams == null) {
-                _screenState.emit(
-                    currState.copy(
-                        isStreamsLoading = false,
-                        error = e
-                    )
-                )
-            }
-        }
-    }
-
-    private suspend fun searchForStream(request: String) {
-        try {
-            val streamsToSearchFrom = if (currState.showSubs)
-                loadSubStreamsUseCase()
-            else
-                loadAllStreamsUseCase()
-
-            _screenState.emit(
-                currState.copy(
-                    request = request,
-                    streams = streamsToSearchFrom.applySearchFilter(request).toListToShow(),
-                    isStreamsLoading = false,
-                )
-            )
-        } catch (e: Throwable) {
-            val streamsToSearchFrom = if (currState.showSubs)
-                loadSubStreamsLocalUseCase()
-            else
-                loadAllStreamsLocalUseCase()
-
-            _screenState.emit(
-                currState.copy(
-                    request = request,
-                    streams = streamsToSearchFrom.applySearchFilter(request).toListToShow(),
-                    isStreamsLoading = false,
-                )
-            )
-        } catch (e: Exception) {
-            _screenState.emit(
-                currState.copy(
-                    request = request,
-                    isStreamsLoading = false,
-                    error = e
-                )
-            )
-        }
-    }
-
-    private fun List<StreamScreenItem>.applySearchFilter(request: String?): List<StreamModel> =
-        if (request.isNullOrBlank())
-            this.filterIsInstance<StreamModel>().sortedBy { it.name.lowercase() }
-        else
-            this.filterIsInstance<StreamModel>().sortedBy { it.name.lowercase() }.filter {
-                it.name.lowercase().contains(request.lowercase())
-            }
 
     private fun List<StreamModel>.toListToShow(): List<StreamScreenItem> {
         val result = mutableListOf<StreamScreenItem>()
-        for (stream in this) {
+        for (stream in this.sortedBy { it.id }) {
             result.add(stream)
-            if (stream.isSelected)
-                stream.topics?.let {
-                    result.addAll(
-                        it
+            if (stream.isSelected && !stream.topics.isNullOrEmpty())
+                result.addAll(stream.topics)
+        }
+        return result
+    }
+
+    private suspend fun changeStreamSelectedState(stream: StreamModel, onError: () -> Unit) {
+        _screenState.emit(
+            currState.copy(
+                streams = currState.streams
+                    .addLoadingTopicsShimmer(stream)
+            )
+        )
+        val loadedTopics = topicsRepo.loadAllTopicsOfCurrentStream(
+            streamId = stream.id,
+            streamName = stream.name,
+            shouldFetch = !stream.isSelected
+        )
+        when (loadedTopics) {
+            is Resource.Success -> {
+                streamsRepo.updateStreamTopics(streamId = stream.id, newTopics = loadedTopics.data)
+            }
+            else -> {
+                onError()
+                _screenState.emit(
+                    currState.copy(
+                        streams = currState.streams
+                            .removeAllShimmers()
                     )
-                }
+                )
+            }
+        }
+    }
+
+    private fun List<StreamModel>.applySearchFilter(request: String?): List<StreamModel> {
+        val result = mutableListOf<StreamModel>()
+        if (request.isNullOrBlank() || request.isEmpty()) return this
+        for (item in this) {
+            if (item.name.contains(request, true)) {
+                result.add(item)
+            }
         }
         return result
     }
 
     private fun List<StreamScreenItem>?.addLoadingTopicsShimmer(stream: StreamModel): List<StreamScreenItem> {
         if (this == null) return emptyList()
-
         val result = mutableListOf<StreamScreenItem>()
         for (item in this) {
-
             result.add(item)
             if (item is StreamModel && item.name == stream.name && !stream.isSelected) {
-                repeat(1) {
+                repeat(3) {
                     result.add(
                         TopicModel(
                             id = "shimmer",
@@ -256,4 +183,10 @@ class StreamViewModel @Inject constructor(
         }
         return result
     }
+
+    private fun List<StreamScreenItem>?.removeAllShimmers(): List<StreamScreenItem>? = this?.filter {
+        (it is TopicModel && it.id != "shimmer") || it is StreamModel
+    }
 }
+
+

@@ -1,37 +1,48 @@
 package com.example.tinkoff_chat_app.data.streams
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import com.example.tinkoff_chat_app.utils.LocalData.SUBSCRIBED_STREAM_TABLE_NAME
-import com.example.tinkoff_chat_app.utils.LocalData.UNSUBSCRIBED_STREAM_TABLE_NAME
+import androidx.room.*
+import com.example.tinkoff_chat_app.models.db_models.DatabaseStreamModel
+import com.example.tinkoff_chat_app.models.db_models.DatabaseSubscriptionModel
+import com.example.tinkoff_chat_app.utils.LocalData.STREAM_TABLE_NAME
+import com.example.tinkoff_chat_app.utils.LocalData.SUBSCRIPTION_TABLE_NAME
 
 @Dao
 interface StreamDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addStream(stream: DatabaseStreamModel)
+    suspend fun addStreams(streams: List<DatabaseStreamModel>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addStream(stream: DatabaseSubscribedStreamModel)
+    suspend fun addStream(stream: DatabaseStreamModel)
 
-    @Query(value = "SELECT * FROM $UNSUBSCRIBED_STREAM_TABLE_NAME")
+    @Delete
+    suspend fun deleteStream(stream: DatabaseStreamModel)
+
+    @Query("SELECT * FROM $STREAM_TABLE_NAME WHERE id = :id")
+    suspend fun getStreamById(id: Int): DatabaseStreamModel
+
+    @Query("SELECT * FROM $STREAM_TABLE_NAME")
     suspend fun getAllStreams(): List<DatabaseStreamModel>
 
-    @Query(value = "SELECT * FROM $SUBSCRIBED_STREAM_TABLE_NAME")
-    suspend fun getSubStreams(): List<DatabaseStreamModel>
-
-    @Query("SELECT COUNT(name) FROM $SUBSCRIBED_STREAM_TABLE_NAME")
-    suspend fun getSubscribedItemCount(): Int
-
-    @Query("SELECT COUNT(name) FROM $UNSUBSCRIBED_STREAM_TABLE_NAME")
-    suspend fun getItemCount(): Int
-
-    @Query("DELETE FROM $SUBSCRIBED_STREAM_TABLE_NAME")
-    suspend fun deleteAllSubStreams()
-
-    @Query("DELETE FROM $UNSUBSCRIBED_STREAM_TABLE_NAME")
+    @Query("DELETE FROM $STREAM_TABLE_NAME")
     suspend fun deleteAllStreams()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addSubscriptions(subs: List<DatabaseSubscriptionModel>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addSubscription(stream: DatabaseSubscriptionModel)
+
+    @Delete
+    suspend fun deleteSubscription(stream: DatabaseSubscriptionModel)
+
+    @Query("SELECT * FROM $SUBSCRIPTION_TABLE_NAME")
+    suspend fun getAllSubscriptions(): List<DatabaseSubscriptionModel>
+
+    @Query("DELETE FROM $SUBSCRIPTION_TABLE_NAME")
+    suspend fun deleteAllSubscriptions()
+
+    @Query("SELECT * FROM $SUBSCRIPTION_TABLE_NAME WHERE id = :id")
+    suspend fun getSubscriptionById(id: Int): DatabaseSubscriptionModel
 
 }

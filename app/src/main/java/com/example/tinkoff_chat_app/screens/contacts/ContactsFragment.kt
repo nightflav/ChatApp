@@ -1,6 +1,7 @@
 package com.example.tinkoff_chat_app.screens.contacts
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -79,30 +80,30 @@ class ContactsFragment : Fragment() {
         }
     }
 
-    private fun render(state: ContactsScreenState) {
-        when (state) {
-            is ContactsScreenState.Error -> {
+    private fun render(state: ContactsScreenUiState) {
+        Log.d("TAGTAGTAG", "$state")
+        when {
+             state.error != null -> {
                 binding.apply {
                     tvErrorStreams.isVisible = true
                     shimmerContacts.isVisible = false
                     rvContacts.isVisible = false
-                    tvErrorStreams.text = state.e.message
+                    tvErrorStreams.text = state.error.message
                 }
             }
-            is ContactsScreenState.Success -> {
-                binding.apply {
-                    tvErrorStreams.isVisible = false
-                    shimmerContacts.isVisible = false
-                    rvContacts.isVisible = true
-                    contactsAdapter.submitList(state.profiles)
-                }
-            }
-            ContactsScreenState.Init -> {}
-            ContactsScreenState.Loading -> {
+            state.isLoading -> {
                 binding.apply {
                     tvErrorStreams.isVisible = false
                     shimmerContacts.isVisible = true
                     rvContacts.isVisible = false
+                }
+            }
+            else -> {
+                binding.apply {
+                    tvErrorStreams.isVisible = false
+                    shimmerContacts.isVisible = false
+                    rvContacts.isVisible = true
+                    contactsAdapter.submitList(state.contacts)
                 }
             }
         }

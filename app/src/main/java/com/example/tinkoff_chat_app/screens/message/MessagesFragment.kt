@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.tinkoff_chat_app.R
 import com.example.tinkoff_chat_app.databinding.FragmentMessagesBinding
 import com.example.tinkoff_chat_app.di.ViewModelFactory
-import com.example.tinkoff_chat_app.models.MessageReaction
+import com.example.tinkoff_chat_app.models.ui_models.MessageReaction
 import com.example.tinkoff_chat_app.utils.Emojis.emojiSetNCS
 import com.example.tinkoff_chat_app.utils.Emojis.getEmojis
 import com.example.tinkoff_chat_app.utils.Network.MESSAGES_TO_LOAD
@@ -124,6 +124,7 @@ class MessagesFragment : Fragment() {
         }
         setupToolbar()
         initRecyclerView()
+
         lifecycleScope.launch {
             viewModel.messagesChannel.send(
                 MessagesIntents.InitMessagesIntent(
@@ -175,7 +176,7 @@ class MessagesFragment : Fragment() {
         }
         rvLayoutManager.generateDefaultLayoutParams()
         binding.rvChat.layoutManager = rvLayoutManager
-        (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = true
+        (binding.rvChat.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
         binding.rvChat.addOnScrollListener(scrollListener)
     }

@@ -1,6 +1,6 @@
 package com.example.tinkoff_chat_app.domain.repository.contacts_repository
 
-import com.example.tinkoff_chat_app.models.UserProfile
+import com.example.tinkoff_chat_app.models.ui_models.UserProfile
 import com.example.tinkoff_chat_app.network.ChatApi
 import com.example.tinkoff_chat_app.utils.Network.MISSING_AVATAR_URL
 import javax.inject.Inject
@@ -48,7 +48,7 @@ class ContactsRepositoryImpl @Inject constructor(
     }).filter {
         it.fullName.contains(request) ||
                 it.email.contains(request) ||
-                (it.email.lowercase() + " " + it.fullName.lowercase()).contains(request.lowercase()) ||
-                (it.fullName.lowercase() + " " + it.email.lowercase()).contains(request.lowercase())
+                (it.email + " " + it.fullName).contains(request, true) ||
+                (it.fullName + " " + it.email).contains(request, true)
     }
 }

@@ -12,9 +12,9 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tinkoff_chat_app.R
-import com.example.tinkoff_chat_app.models.stream_screen_models.StreamModel
-import com.example.tinkoff_chat_app.models.stream_screen_models.StreamScreenItem
-import com.example.tinkoff_chat_app.models.stream_screen_models.TopicModel
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamModel
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamScreenItem
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.TopicModel
 
 class StreamAdapter(
     private val context: Context,

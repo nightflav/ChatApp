@@ -1,7 +1,7 @@
 package com.example.tinkoff_chat_app.data.messages
 
 import androidx.room.TypeConverter
-import com.example.tinkoff_chat_app.domain.repository.messages_repository.ReactionDto
+import com.example.tinkoff_chat_app.models.data_transfer_models.ReactionDto
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
