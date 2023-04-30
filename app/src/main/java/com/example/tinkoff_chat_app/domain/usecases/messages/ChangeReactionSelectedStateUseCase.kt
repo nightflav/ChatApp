@@ -1,7 +1,7 @@
 package com.example.tinkoff_chat_app.domain.usecases.messages
 
 import com.example.tinkoff_chat_app.domain.repository.messages_repository.MessagesRepository
-import com.example.tinkoff_chat_app.models.MessageReaction
+import com.example.tinkoff_chat_app.models.ui_models.MessageReaction
 import javax.inject.Inject
 
 class ChangeReactionSelectedStateUseCase @Inject constructor(
