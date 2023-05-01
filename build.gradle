@@ -1,12 +1,55 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+    ext {
+        versions = [
+                'room'      : '2.5.1',
+                'navigation': '2.5.3',
+                'retrofit'  : '2.9.0',
+                'dagger'    : '2.45'
+        ]
+
+        deps = [
+                'kotlin'   : [
+                        'coroutines': "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+                ],
+                'androidx' : [
+                        'navigation'      : [
+                                'fragment': "androidx.navigation:navigation-fragment-ktx:${versions.navigation}",
+                                'ui'      : "androidx.navigation:navigation-ui-ktx:${versions.navigation}"
+                        ],
+                        'core'            : 'androidx.core:core-ktx:1.10.0',
+                        'appСompat'       : 'androidx.appcompat:appcompat:1.6.1',
+                        'activity'        : 'androidx.activity:activity-ktx:1.7.1',
+                        'room'            : [
+                                'runtime' : "androidx.room:room-runtime:${versions.room}",
+                                'compiler': "androidx.room:room-compiler:${versions.room}",
+                                'ktx'     : "androidx.room:room-ktx:${versions.room}"
+                        ],
+                        'constraintLayout': 'androidx.constraintlayout:constraintlayout:2.1.4',
+                        'datastore': 'androidx.datastore:datastore-preferences:1.0.0',
+                ],
+                'retrofit2': [
+                        'retrofit': "com.squareup.retrofit2:retrofit:${versions.retrofit}",
+                        'moshi'   : "com.squareup.retrofit2:converter-moshi:${versions.retrofit}"
+                ],
+                'moshi'    : 'com.squareup.moshi:moshi-kotlin:1.14.0',
+                'glide'    : 'com.github.bumptech.glide:glide:4.15.1',
+                'dagger'   : [
+                        'dagger'  : "com.google.dagger:dagger:${versions.dagger}",
+                        'compiler': "com.google.dagger:dagger-compiler:${versions.dagger}"
+                ],
+                'fb'       : 'com.facebook.shimmer:shimmer:0.5.0',
+                'material' : 'com.google.android.material:material:1.8.0'
+
+        ]
+    }
     repositories {
         google()
     }
     dependencies {
-        def nav_version = "2.5.3"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:${versions.navigation}"
+        classpath "com.google.dagger:dagger-compiler:${versions.dagger}"
     }
 }
 

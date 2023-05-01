@@ -20,9 +20,10 @@ interface MessageDao {
     @Delete
     suspend fun deleteMessage(message: DatabaseMessageModel)
 
-    @Query("DELETE FROM $MESSAGE_TABLE_NAME" +
-            " WHERE topicName = :fromTopic" +
-            " AND streamName = :fromStream"
+    @Query(
+        "DELETE FROM $MESSAGE_TABLE_NAME" +
+                " WHERE topicName = :fromTopic" +
+                " AND streamName = :fromStream"
     )
     suspend fun deleteMessagesOfCurrentTopic(fromTopic: String, fromStream: String)
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Homework_2</string>
+    <string name="app_name">Tinkoff Chat App</string>
     <string name="enter_message_hint">Enter Message…</string>
     <string name="send_message_description">Send message</string>
     <string name="stream_name">%1$s</string>
