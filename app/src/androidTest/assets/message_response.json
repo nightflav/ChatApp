@@ -1,0 +1,36 @@
+{
+  "result": "success",
+  "msg": "",
+  "messages": [
+    {
+      "id": 354875665,
+      "sender_id": 613790,
+      "content": "<p>another message</p>",
+      "recipient_id": 1054258,
+      "timestamp": 1682947277,
+      "client": "website",
+      "subject": "justNewTitle",
+      "topic_links": [],
+      "is_me_message": false,
+      "reactions": [],
+      "submessages": [],
+      "flags": [
+        "read",
+        "historical"
+      ],
+      "sender_full_name": "Georgiy Merkulov",
+      "sender_email": "user613790@tinkoff-android-spring-2023.zulipchat.com",
+      "sender_realm_str": "tinkoff-android-spring-2023",
+      "display_recipient": "gegeeg",
+      "type": "stream",
+      "stream_id": 382338,
+      "avatar_url": "https://secure.gravatar.com/avatar/d5e5c4187d4cbeac5ed626370f0eadb9?d=identicon&version=1",
+      "content_type": "text/html"
+    }
+  ],
+  "found_anchor": false,
+  "found_oldest": true,
+  "found_newest": true,
+  "history_limited": false,
+  "anchor": 10000000000000000
+}
