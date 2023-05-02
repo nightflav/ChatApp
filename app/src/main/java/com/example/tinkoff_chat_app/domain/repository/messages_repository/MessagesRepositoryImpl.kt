@@ -1,6 +1,5 @@
 package com.example.tinkoff_chat_app.domain.repository.messages_repository
 
-import android.util.Log
 import com.example.tinkoff_chat_app.data.messages.MessageDao
 import com.example.tinkoff_chat_app.models.data_transfer_models.MessageDto
 import com.example.tinkoff_chat_app.network.ChatApi
@@ -98,7 +97,6 @@ class MessagesRepositoryImpl @Inject constructor(
                 data = newMessagesNetwork
             )
         )
-        Log.d("TAGTAGTAG", "LOAD FIRST MESSAGES")
     }
 
     private suspend fun addNewMessagesToCurrentMessages(newMessages: List<MessageDto>) {
@@ -110,7 +108,6 @@ class MessagesRepositoryImpl @Inject constructor(
                 data = messages
             )
         )
-        Log.d("TAGTAGTAG", "ADD NEW MESSAGES")
     }
 
     private suspend fun updateDatabase(
@@ -179,8 +176,6 @@ class MessagesRepositoryImpl @Inject constructor(
         val networkMessages = (chatApi.getMessages(
             anchor = anchor, narrow = narrow.toString(), numBefore = 1000, numAfter = 0
         ).body()?.messages ?: emptyList()).toMessageDtoList()
-
-        Log.d("TAGTAGTAGTAG", "${networkMessages.map { it.msg + "\n" }}")
 
         if (networkMessages.isNotEmpty())
             currentMessages.emit(

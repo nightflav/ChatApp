@@ -13,14 +13,23 @@ android {
         exclude "META-INF/DEPENDENCIES"
     }
 
-
     defaultConfig {
         applicationId "com.example.tinkoff_chat_app"
         minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments clearPackageData: 'true'
     }
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        unitTests.all {
+            useJUnitPlatform()
+        }
+    }
+
     buildFeatures {
         viewBinding true
     }
@@ -57,10 +66,13 @@ dependencies {
 
     implementation deps.retrofit2.retrofit
     implementation deps.retrofit2.moshi
+    implementation deps.retrofit2.logginInterceptor
     implementation deps.moshi
     implementation deps.glide
 
     implementation deps.dagger.dagger
+    debugImplementation 'androidx.fragment:fragment-testing:1.5.7'
+    androidTestImplementation project(path: ':app')
     kapt deps.dagger.compiler
 
     implementation deps.androidx.room.runtime
@@ -68,4 +80,42 @@ dependencies {
     implementation deps.androidx.room.ktx
 
     implementation deps.androidx.datastore
+
+    testImplementation deps.test.junit
+    androidTestImplementation deps.test.junit
+
+    androidTestImplementation deps.androidx.test
+    testImplementation deps.androidx.test
+
+//    androidTestImplementation deps.androidx.junit
+//    androidTestImplementation deps.androidx.junit
+//
+//    androidTestImplementation deps.androidx.runner
+//    androidTestImplementation deps.androidx.runner
+//
+//    androidTestUtil deps.androidx.orchestrator
+//    androidTestUtil deps.androidx.orchestrator
+//
+//    androidTestImplementation deps.test.kaspersky
+//
+//    testImplementation deps.test.coroutines
+//    testImplementation deps.test.okhttp
+//    testImplementation deps.test.arch
+//
+//    testImplementation "junit:junit:4.13.2"
+
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "androidx.arch.core:core-testing:2.2.0"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.10.0"
+
+    androidTestImplementation "androidx.test.ext:junit:1.1.5"
+    androidTestImplementation "com.kaspersky.android-components:kaspresso:1.5.1"
+    androidTestImplementation "com.squareup.okhttp3:mockwebserver:4.10.0"
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestUtil 'androidx.test:orchestrator:1.4.2'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.3'
+
 }

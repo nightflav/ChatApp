@@ -11,6 +11,7 @@ import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
@@ -18,13 +19,20 @@ import javax.inject.Singleton
 @Module(subcomponents = [StreamSubcomponent::class, MessagesSubcomponent::class, ContactsSubcomponent::class])
 class NetworkModule {
 
+    @Singleton
+    @Provides
+    fun provideBaseUsr(): String = Network.BASE_URL
+
     @Provides
     @Singleton
-    fun provideHttpClient(): OkHttpClient = OkHttpClient.Builder().addInterceptor { chain ->
-        val request: Request =
-            chain.request().newBuilder().addHeader("Authorization", Network.AUTH_KEY).build()
-        chain.proceed(request)
-    }.build()
+    fun provideHttpClient(): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor { chain ->
+            val request: Request =
+                chain.request().newBuilder().addHeader("Authorization", Network.AUTH_KEY).build()
+            chain.proceed(request)
+        }
+        .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+        .build()
 
     @Provides
     @Singleton
@@ -32,8 +40,12 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(moshi: Moshi, httpClient: OkHttpClient): Retrofit =
-        Retrofit.Builder().baseUrl(Network.BASE_URL)
+    fun provideRetrofit(
+        moshi: Moshi,
+        httpClient: OkHttpClient,
+        url: String
+    ): Retrofit =
+        Retrofit.Builder().baseUrl(url)
             .addConverterFactory(MoshiConverterFactory.create(moshi)).client(httpClient).build()
 
     @Provides

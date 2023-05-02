@@ -6,7 +6,9 @@ buildscript {
                 'room'      : '2.5.1',
                 'navigation': '2.5.3',
                 'retrofit'  : '2.9.0',
-                'dagger'    : '2.45'
+                'dagger'    : '2.45',
+                'coroutines': "1.6.4",
+                'okhttp'    : '4.10.0'
         ]
 
         deps = [
@@ -27,21 +29,32 @@ buildscript {
                                 'ktx'     : "androidx.room:room-ktx:${versions.room}"
                         ],
                         'constraintLayout': 'androidx.constraintlayout:constraintlayout:2.1.4',
-                        'datastore': 'androidx.datastore:datastore-preferences:1.0.0',
+                        'datastore'       : 'androidx.datastore:datastore-preferences:1.0.0',
+                        'test'            : 'androidx.arch.core:core-testing:2.2.0',
+                        'junit'           : 'androidx.test.ext:junit:1.1.5',
+                        'runner'          : 'androidx.test:runner:1.5.2',
+                        'orchestrator'    : 'androidx.test:orchestrator:1.4.2'
                 ],
                 'retrofit2': [
-                        'retrofit': "com.squareup.retrofit2:retrofit:${versions.retrofit}",
-                        'moshi'   : "com.squareup.retrofit2:converter-moshi:${versions.retrofit}"
+                        'retrofit'         : "com.squareup.retrofit2:retrofit:${versions.retrofit}",
+                        'moshi'            : "com.squareup.retrofit2:converter-moshi:${versions.retrofit}",
+                        'logginInterceptor': "com.squareup.okhttp3:logging-interceptor:${versions.okhttp}"
                 ],
                 'moshi'    : 'com.squareup.moshi:moshi-kotlin:1.14.0',
                 'glide'    : 'com.github.bumptech.glide:glide:4.15.1',
                 'dagger'   : [
-                        'dagger'  : "com.google.dagger:dagger:${versions.dagger}",
-                        'compiler': "com.google.dagger:dagger-compiler:${versions.dagger}"
+                        'dagger'   : "com.google.dagger:dagger:${versions.dagger}",
+                        'compiler' : "com.google.dagger:dagger-compiler:${versions.dagger}",
+                        'processor': "com.google.dagger:dagger-android-processor:${versions.dagger}"
                 ],
                 'fb'       : 'com.facebook.shimmer:shimmer:0.5.0',
-                'material' : 'com.google.android.material:material:1.8.0'
-
+                'material' : 'com.google.android.material:material:1.8.0',
+                'test'     : ['junit'     : "junit:junit:4.13.2",
+                              'coroutines': "org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions.coroutines}",
+                              'okhttp'    : "com.squareup.okhttp3:mockwebserver:${versions.okhttp}",
+                              'kaspersky' : 'com.kaspersky.android-components:kaspresso:1.5.1',
+                              'arch'      : "androidx.arch.core:core-testing:2.2.0"
+                ]
         ]
     }
     repositories {
@@ -50,6 +63,7 @@ buildscript {
     dependencies {
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:${versions.navigation}"
         classpath "com.google.dagger:dagger-compiler:${versions.dagger}"
+        classpath 'android.arch.core:core-testing:1.1.1'
     }
 }
 
