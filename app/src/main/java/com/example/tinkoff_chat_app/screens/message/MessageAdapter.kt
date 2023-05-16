@@ -188,7 +188,6 @@ class MessageAdapter(
                         onMessageLongClickListener(msg, false)
                         true
                     }
-
                 }
                 else -> {
                     msgVg.attachedImage.isVisible = false
@@ -287,6 +286,7 @@ class MessageAdapter(
                 onMessageLongClickListener(msg, false)
             }
             msgSent.setOnCreateContextMenuListener(this)
+            imageHolder.setOnCreateContextMenuListener(this)
             val msgId = msg.message_id
             msgSent.text = msg.msg
             val reactions = msg.reactions

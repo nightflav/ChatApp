@@ -222,7 +222,8 @@ class SubscribeForMessagesUseCase @Inject constructor(
                     BASE_URL_FILES_UPLOAD + if (line.first() == '/') "" else "/" + line
                         .substring(line.indexOf("href=\"") + 6, line.indexOf("\">"))
                 )
-            }
+            } else if (line.matches("https://tinkoff-android-spring-2023\\.zulipchat\\.com/user_uploads/[A-Za-z\\d]+/[A-Za-z\\d-_+]+/[A-Za-z\\d-_+.]+".toRegex()))
+                links.add(line)
         }
         return links
     }
