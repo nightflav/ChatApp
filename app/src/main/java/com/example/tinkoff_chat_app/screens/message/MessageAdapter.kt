@@ -42,7 +42,8 @@ class MessageAdapter(
     private val context: Context,
     private val onReactionClickListener: (MessageReaction, Int) -> Unit,
     private val onTopicItemClickListener: (String) -> Unit,
-    private val downloader: Downloader
+    private val downloader: Downloader,
+    private val isConnectionAvailable: Boolean
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var messages: List<MessageModel> = emptyList()
@@ -371,49 +372,63 @@ class MessageAdapter(
     }
 
     private fun downloadDocFile(msg: MessageModel) {
-        try {
-            val mimeType = "application/" + when {
-                msg.attachedFilename!!.contains(".pdg") -> "pdf"
-                msg.attachedFilename.contains(".txt") -> "txt"
-                msg.attachedFilename.contains(".doc") -> "doc"
-                else -> "*"
+        if (isConnectionAvailable)
+            try {
+                val mimeType = "application/" + when {
+                    msg.attachedFilename!!.contains(".pdg") -> "pdf"
+                    msg.attachedFilename.contains(".txt") -> "txt"
+                    msg.attachedFilename.contains(".doc") -> "doc"
+                    else -> "*"
+                }
+                downloader.downloadFile(
+                    uri = msg.attachedDocUrl!!,
+                    fileName = msg.attachedFilename,
+                    mimeType = mimeType
+                )
+            } catch (e: Exception) {
+                Toast.makeText(
+                    context,
+                    "An error occurred while downloading file.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-            downloader.downloadFile(
-                uri = msg.attachedDocUrl!!,
-                fileName = msg.attachedFilename,
-                mimeType = mimeType
-            )
-        } catch (e: Exception) {
+        else {
             Toast.makeText(
                 context,
-                "An error occurred while downloading file.",
+                "No Internet connection.",
                 Toast.LENGTH_SHORT
             ).show()
-            Log.d("TAGTAGTAG", "$e")
         }
     }
 
     private fun downloadImageFile(msg: MessageModel) {
-        try {
-            val mimeType = "application/" + when {
-                msg.attachedFilename!!.contains(".pdg") -> "pdf"
-                msg.attachedFilename.contains(".txt") -> "txt"
-                msg.attachedFilename.contains(".doc") -> "doc"
-                else -> "*"
+        if (isConnectionAvailable)
+            try {
+                val mimeType = "application/" + when {
+                    msg.attachedFilename!!.contains(".pdg") -> "pdf"
+                    msg.attachedFilename.contains(".txt") -> "txt"
+                    msg.attachedFilename.contains(".doc") -> "doc"
+                    else -> "*"
+                }
+                Log.d("TAGTAGTAG", "${msg.attachedFilename} ${msg.attachedDocUrl}")
+                downloader.downloadFile(
+                    uri = msg.attachedImageUrl!!,
+                    fileName = msg.attachedFilename,
+                    mimeType = mimeType
+                )
+            } catch (e: Exception) {
+                Toast.makeText(
+                    context,
+                    "An error occurred while downloading file.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-            Log.d("TAGTAGTAG", "${msg.attachedFilename} ${msg.attachedDocUrl}")
-            downloader.downloadFile(
-                uri = msg.attachedImageUrl!!,
-                fileName = msg.attachedFilename,
-                mimeType = mimeType
-            )
-        } catch (e: Exception) {
+        else {
             Toast.makeText(
                 context,
-                "An error occurred while downloading file.",
+                "No Internet connection.",
                 Toast.LENGTH_SHORT
             ).show()
-            Log.d("TAGTAGTAG", "$e")
         }
     }
 }

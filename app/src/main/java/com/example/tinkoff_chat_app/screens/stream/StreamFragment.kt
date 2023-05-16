@@ -18,6 +18,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.tinkoff_chat_app.databinding.FragmentChannelsBinding
 import com.example.tinkoff_chat_app.di.ViewModelFactory
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamModel
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamScreenItem
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.TopicModel
 import com.example.tinkoff_chat_app.utils.getAppComponent
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.launchIn
@@ -48,7 +51,7 @@ class StreamFragment : Fragment() {
                 val action =
                     StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
                         stream = stream,
-                        topicName = topic.name,
+                        topicName = topic.name.lowercase(),
                         allTopics = false,
                         topicId = "wrong topic id"
                     )
@@ -195,8 +198,7 @@ class StreamFragment : Fragment() {
                     tvErrorStreams.isVisible = false
                     shimmerStreams.isVisible = false
                     rvStreams.isVisible = true
-                    streamAdapter.submitList(state.streams!!)
-
+                    streamAdapter.submitList(state.streams!!.applySearchFilter(state.request))
                     val tabPosition = if (state.showSubs) 0 else 1
                     val tab = tlSelectChannel.getTabAt(tabPosition)
                     tab!!.select()
@@ -222,9 +224,9 @@ class StreamFragment : Fragment() {
 
     private fun showCreateNewStreamDialog() {
         if (!(createNewStreamDialog != null
-            && createNewStreamDialog!!.dialog != null
-            && createNewStreamDialog!!.dialog!!.isShowing
-            && !createNewStreamDialog!!.isRemoving)
+                    && createNewStreamDialog!!.dialog != null
+                    && createNewStreamDialog!!.dialog!!.isShowing
+                    && !createNewStreamDialog!!.isRemoving)
         ) {
             createNewStreamDialog =
                 StreamCreateDialog.newInstance { streamName, streamDisc, announce ->
@@ -242,6 +244,23 @@ class StreamFragment : Fragment() {
                 }
             createNewStreamDialog!!.show(childFragmentManager, "stream_dialog")
         }
+    }
+
+    private fun List<StreamScreenItem>.applySearchFilter(request: String?): List<StreamScreenItem> {
+        val result = mutableListOf<StreamScreenItem>()
+        if (request.isNullOrBlank() || request.isEmpty()) return this
+        for (item in this) {
+            if (item is StreamModel)
+                if (item.name.contains(request, true)) {
+                    result.add(item)
+                }
+            if (item is TopicModel) {
+                if (item.parentName.contains(request, true)) {
+                    result.add(item)
+                }
+            }
+        }
+        return result
     }
 
 }

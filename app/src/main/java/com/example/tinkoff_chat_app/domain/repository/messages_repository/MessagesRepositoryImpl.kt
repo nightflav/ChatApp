@@ -33,8 +33,9 @@ class MessagesRepositoryImpl @Inject constructor(
     override suspend fun loadMessagesWhenStart(
         topicName: String?, streamName: String, amount: Int, lastMsgId: Int?, shouldFetch: Boolean
     ) {
-        if (topicName != null) {
-            loadMessagesWhenStartWithTopic(topicName, streamName, amount, lastMsgId, shouldFetch)
+        val lowerTopicName = topicName?.lowercase()
+        if (lowerTopicName != null) {
+            loadMessagesWhenStartWithTopic(lowerTopicName, streamName, amount, lastMsgId, shouldFetch)
         } else {
             loadMessagesWhenStartWithoutTopic(streamName, amount, lastMsgId, shouldFetch)
         }
@@ -128,7 +129,8 @@ class MessagesRepositoryImpl @Inject constructor(
         amount: Int,
         lastMsgId: Int?,
     ) {
-        if (topicName == null) {
+        val lowerTopicName = topicName?.lowercase()
+        if (lowerTopicName == null) {
             val networkMessages = loadMessagesByNetworkFromStream(
                 streamName = streamName,
                 lastMsgId = lastMsgId,
@@ -138,13 +140,13 @@ class MessagesRepositoryImpl @Inject constructor(
             updateStreamDatabase(streamName)
         } else {
             val networkMessages = loadMessagesByNetwork(
-                topicName = topicName,
+                topicName = lowerTopicName,
                 streamName = streamName,
                 lastMsgId = lastMsgId,
                 amount = amount
             )
             addNewMessagesToCurrentMessages(networkMessages)
-            updateDatabase(streamName, topicName)
+            updateDatabase(streamName, lowerTopicName)
         }
     }
 

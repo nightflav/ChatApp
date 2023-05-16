@@ -173,7 +173,8 @@ class MessagesFragment : Fragment() {
                     )
                 findNavController().navigate(action)
             },
-            downloader = downloader
+            downloader = downloader,
+            isConnectionAvailable = isNetworkAvailable(context)
         )
 
         binding.llTopicSelection.isVisible = allTopics
@@ -348,7 +349,7 @@ class MessagesFragment : Fragment() {
     private fun setSendButtonOnClickListener() {
         binding.btnSend.setOnClickListener {
             if (binding.etMessage.text!!.isNotEmpty()) {
-                val topic = binding.etTopicSelector.text.toString()
+                val topic = binding.etTopicSelector.text.toString().lowercase()
                 if (!nowEditing)
                     if (topic.isEmpty() || topic.isBlank())
                         makeErrorToast("Input topic name!")
@@ -357,7 +358,8 @@ class MessagesFragment : Fragment() {
                             viewModel.messagesChannel.send(
                                 MessagesIntents.SendMessageIntent(
                                     content = binding.etMessage.text.toString(),
-                                    topic = topicName ?: binding.etTopicSelector.text.toString()
+                                    topic = topicName?.lowercase()
+                                        ?: binding.etTopicSelector.text.toString()
                                 ) {
                                     makeErrorToast("An error occurred sending message.")
                                 }
@@ -559,7 +561,7 @@ class MessagesFragment : Fragment() {
                     viewModel.messagesChannel.send(
                         MessagesIntents.ChangeMessageTopicIntent(
                             msgId = msg.message_id,
-                            newTopicName = newTopicName
+                            newTopicName = newTopicName.lowercase()
                         ) {
                             makeErrorToast(it)
                         }
