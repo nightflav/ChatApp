@@ -1,7 +1,6 @@
 package com.example.tinkoff_chat_app.domain.repository.profile_repository
 
 import android.content.SharedPreferences
-import android.util.Log
 import com.example.tinkoff_chat_app.models.ui_models.UserProfile
 import com.example.tinkoff_chat_app.network.ChatApi
 import com.example.tinkoff_chat_app.models.network_models.users.Member
@@ -22,19 +21,17 @@ class ProfileRepositoryImpl @Inject constructor(
 
     private var profile: UserProfile? = null
 
-    suspend fun getProfile(): UserProfile {
+    override suspend fun getProfile(): UserProfile {
         if (profile == null) {
             profile = chatApi.getProfile().toUserProfile()
             val fullName = profile!!.fullName
             val id = profile!!.id
             val status = profile!!.status
             with(spProfile.edit()) {
-                Log.d("TAGTAGTAG", "saveing profile $profile")
                 putString(SP_PROFILE_FULLNAME, fullName)
                 putInt(SP_PROFILE_ID, id)
                 putString(SP_PROFILE_STATUS, status)
             }.apply()
-            Log.d("TAGTAGTAG", "saveing profile ${spProfile.all}")
         }
         return profile!!
     }

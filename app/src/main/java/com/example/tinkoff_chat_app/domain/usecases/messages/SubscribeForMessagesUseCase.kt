@@ -1,6 +1,7 @@
 package com.example.tinkoff_chat_app.domain.usecases.messages
 
 import android.content.SharedPreferences
+import androidx.core.text.HtmlCompat
 import com.example.tinkoff_chat_app.domain.repository.messages_repository.MessagesRepository
 import com.example.tinkoff_chat_app.domain.repository.profile_repository.ProfileRepository
 import com.example.tinkoff_chat_app.models.data_transfer_models.MessageDto
@@ -44,6 +45,7 @@ class SubscribeForMessagesUseCase @Inject constructor(
                         data = it.data.toMessageModelList()!!
                             .transformTextToEmojis()
                             .transformMessagesToImages()
+                            .reformatFromHtml()
                             .addDateSeparatorsAndTopics(allTopics)
                     )
                 }
@@ -228,4 +230,12 @@ class SubscribeForMessagesUseCase @Inject constructor(
     private fun String.isImageLink(): Boolean = this.contains("jpg|png|bmp".toRegex())
 
     private fun String.isDocsLink(): Boolean = this.contains("pdf|doc|txt".toRegex())
+
+    private fun List<MessageModel>.reformatFromHtml() = this.map {
+        it.copy(
+            msg = HtmlCompat.fromHtml(
+                it.msg, HtmlCompat.FROM_HTML_MODE_COMPACT
+            ).toString().trim()
+        )
+    }
 }
