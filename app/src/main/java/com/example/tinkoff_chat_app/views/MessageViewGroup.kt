@@ -18,16 +18,16 @@ class MessageViewGroup
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0
 ) : ViewGroup(
-    context,
-    attributeSet,
-    defStyleAttr,
-    defStyleRes
+    context, attributeSet, defStyleAttr, defStyleRes
 ) {
     val image: ImageView by lazy { findViewById(R.id.profile_image) }
     val message: TextView by lazy { findViewById(R.id.message_text) }
     val name: TextView by lazy { findViewById(R.id.sender_name) }
-    private val linearLayout: LinearLayout by lazy { findViewById(R.id.msg_vg_text) }
+    val imageToLoad: ImageView by lazy { findViewById(R.id.iv_image_message_received) }
+    val attachedImage: LinearLayout by lazy { findViewById(R.id.ll_message_image) }
+    val attachedFileImage: LinearLayout by lazy { findViewById(R.id.ll_message_docs) }
     val reactions: ReactionsViewGroup by lazy { findViewById(R.id.reactions) }
+    val linearLayout: LinearLayout by lazy { findViewById(R.id.msg_vg_text) }
     private val paddingHorizontal = paddingLeft + paddingRight
     private val paddingVertical = paddingTop + paddingBottom
 
@@ -54,18 +54,13 @@ class MessageViewGroup
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if(reactions.childCount == 1)
-            reactions.isVisible = false
+        if (reactions.childCount == 1) reactions.isVisible = false
 
         reactions.setMaxSpace(277f.dp(context).toInt())
         message.includeFontPadding = false
 
         measureChildWithMargins(
-            image,
-            widthMeasureSpec,
-            image.marginTop,
-            heightMeasureSpec,
-            image.marginStart
+            image, widthMeasureSpec, image.marginTop, heightMeasureSpec, image.marginStart
         )
 
         measureChildWithMargins(
@@ -81,28 +76,47 @@ class MessageViewGroup
             widthMeasureSpec,
             image.measuredWidth + image.marginRight + image.marginLeft,
             heightMeasureSpec,
-            linearLayout.measuredHeight +
-                    name.measuredHeight + name.marginTop + name.marginBottom
+            linearLayout.measuredHeight + name.measuredHeight + name.marginTop + name.marginBottom
         )
 
-        val totalWidth =
-            paddingHorizontal + image.measuredWidth + maxOf(
-                reactions.measuredWidth,
-                linearLayout.measuredWidth
-            ) + 16f.dp(context).toInt()
+        measureChildWithMargins(
+            attachedImage,
+            widthMeasureSpec,
+            attachedImage.marginTop,
+            heightMeasureSpec,
+            image.maxWidth + attachedImage.marginStart + image.marginStart
+        )
 
-        val totalHeight =
-            paddingVertical + maxOf(
-                image.measuredHeight,
-                linearLayout.measuredHeight + reactions.measuredHeight
-            ) + paddingVertical
-        setMeasuredDimension(totalWidth, totalHeight)
+        measureChildWithMargins(
+            attachedFileImage,
+            widthMeasureSpec,
+            attachedFileImage.marginTop,
+            heightMeasureSpec,
+            image.maxWidth + attachedFileImage.marginStart + image.marginStart
+        )
+
+        val totalWidth = paddingHorizontal + image.measuredWidth + maxOf(
+            reactions.measuredWidth,
+            attachedImage.measuredWidth,
+            linearLayout.measuredWidth,
+            linearLayout.measuredWidth,
+        ) + 16f.dp(context).toInt()
+
+        val totalHeight = paddingVertical + maxOf(
+            image.measuredHeight,
+            linearLayout.measuredHeight + reactions.measuredHeight + if (attachedImage.isVisible) attachedImage.measuredHeight else 0 + if (attachedFileImage.isVisible) attachedFileImage.measuredHeight else 0
+        )
+
+        setMeasuredDimension(
+            totalWidth, totalHeight
+        )
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
 
         var offsetX = paddingLeft + image.marginLeft
         var offsetY = paddingTop
+
         image.layout(
             offsetX,
             offsetY + image.marginTop,
@@ -119,6 +133,26 @@ class MessageViewGroup
             offsetY + linearLayout.marginTop + linearLayout.measuredHeight
         )
         offsetY += linearLayout.measuredHeight + linearLayout.marginTop + linearLayout.marginBottom
+
+        if (attachedImage.isVisible) {
+            attachedImage.layout(
+                offsetX,
+                offsetY + attachedImage.marginTop,
+                offsetX + attachedImage.measuredWidth,
+                offsetY + attachedImage.marginTop + attachedImage.measuredHeight
+            )
+            offsetY += attachedImage.measuredHeight + attachedImage.marginTop + attachedImage.marginBottom
+        }
+
+        if (attachedFileImage.isVisible) {
+            attachedFileImage.layout(
+                offsetX,
+                offsetY + attachedFileImage.marginTop,
+                offsetX + attachedFileImage.measuredWidth,
+                offsetY + attachedFileImage.marginTop + attachedFileImage.measuredHeight
+            )
+            offsetY += attachedFileImage.measuredHeight + attachedFileImage.marginTop + attachedFileImage.marginBottom
+        }
 
         reactions.layout(
             offsetX,

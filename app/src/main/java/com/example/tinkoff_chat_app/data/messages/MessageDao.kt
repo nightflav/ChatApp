@@ -27,4 +27,16 @@ interface MessageDao {
     )
     suspend fun deleteMessagesOfCurrentTopic(fromTopic: String, fromStream: String)
 
+    @Query(
+        "DELETE FROM $MESSAGE_TABLE_NAME" +
+                " WHERE streamName = :fromStream"
+    )
+    suspend fun deleteMessagesOfCurrentStream(fromStream: String)
+
+    @Query(
+        "SELECT * FROM $MESSAGE_TABLE_NAME" +
+                " WHERE streamName = :fromStream"
+    )
+    suspend fun getMessagesFromStream(fromStream: String): List<DatabaseMessageModel>
+
 }

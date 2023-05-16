@@ -2,7 +2,7 @@
     <string name="app_name">Tinkoff Chat App</string>
     <string name="enter_message_hint">Enter Message…</string>
     <string name="send_message_description">Send message</string>
-    <string name="stream_name">%1$s</string>
+    <string name="stream_name">#%1$s</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="ic_search_channel_fragment">search</string>
     <string name="search_contacts_fragment">Search…</string>
@@ -22,4 +22,27 @@
     <string name="error_text">Error</string>
     <string name="error_profile">An error occurred while loading profile</string>
     <string name="error_streams">An error occurred while loading streams.</string>
+    <string name="edit_message">Edit Message</string>
+    <string name="delete_message">Delete Message</string>
+    <string name="copy_message">Copy Message</string>
+    <string name="change_message_topic">Change Message Topic</string>
+    <string name="change">Change</string>
+    <string name="add_reaction">Add Reaction</string>
+    <string name="create_new_stream">Create New Stream</string>
+    <string name="stream_name_dialog">Stream Name</string>
+    <string name="stream_description_dialog">Stream Description (optional)</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="submit_button">Submit</string>
+    <string name="make_announcement_dialog">Make announcement</string>
+    <string name="copy_message_to_clipboard_description">Copy Message To Clipboard</string>
+    <string name="select_topic_for_message">Send to:</string>
+    <string name="topic_hint">topic</string>
+    <string name="enter_new_topic_name">Enter new topic name:</string>
+    <string name="enter_topic_name_dialog">Enter topic name</string>
+    <string name="select_file_type_dialog">Select file type:</string>
+    <string name="photo">Photo</string>
+    <string name="document">Documents</string>
+    <string name="image">Image</string>
+    <string name="docs">Docs</string>
+    <string name="tap_to_download">Tap to download</string>
 </resources>

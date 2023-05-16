@@ -26,13 +26,20 @@
             android:id="@+id/action_messagesFragment_to_channelsFragment"
             app:popUpTo="@id/channelsFragment"/>
         <argument
-            android:name="streamName"
-            app:argType="string" />
-        <argument android:name="topicName"
-            app:argType="string" />
+            android:name="stream"
+            app:argType="com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamModel" />
         <argument
-            android:name="streamId"
-            app:argType="integer" />
+            android:name="allTopics"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="topicName"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_messagesFragment_self"
+            app:destination="@id/messagesFragment"
+            app:popUpTo="@id/channelsFragment" />
     </fragment>
     <fragment
         android:id="@+id/contactsFragment"

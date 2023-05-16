@@ -8,7 +8,7 @@
         android:layout_height="30dp"
         android:background="@drawable/bg_emoji_reaction_view_default"
         android:importantForAccessibility="no"
-        android:src="@drawable/ic_add"
+        android:src="@drawable/ic_add_stream"
         app:tint="@color/white_text" />
 
 </merge>

@@ -31,8 +31,8 @@ object MessagesMappers {
         it.toMessageDto()
     }
 
-    fun List<MessageDto>.toDatabaseMessageModelList(streamName: String, topicName: String) = map {
-        it.toDatabaseMessageModel(streamName, topicName)
+    fun List<MessageDto>.toDatabaseMessageModelList(streamName: String) = map {
+        it.toDatabaseMessageModel(streamName, it.topic)
     }
 
     private fun MessageDto.toDatabaseMessageModel(streamName: String, topicName: String) = DatabaseMessageModel(
@@ -44,17 +44,18 @@ object MessagesMappers {
         date = date,
         streamName = streamName,
         topicName = topicName,
-        avatarUri = avatarUri
+        avatarUri = avatarUri,
     )
 
-    private fun Message.toMessageDto() = MessageDto(
+    fun Message.toMessageDto() = MessageDto(
         messageId = id,
         senderName = senderFullName,
         senderId = senderId,
         msg = content,
-        reactions = reactions.map { it.toReactionDto() },
+        reactions = reactions.map { it.toReactionDto() }.toMutableList(),
         date = timestamp,
-        avatarUri = avatarUrl ?: MISSING_AVATAR_URL
+        avatarUri = avatarUrl ?: MISSING_AVATAR_URL,
+        topic = topic
     )
 
     private fun Reaction.toReactionDto() = ReactionDto(
@@ -66,9 +67,10 @@ object MessagesMappers {
         senderName = senderName,
         senderId = senderId,
         msg = msg,
-        reactions = reactions,
+        reactions = reactions.toMutableList(),
         date = date,
-        avatarUri = avatarUri
+        avatarUri = avatarUri,
+        topic = topicName
     )
 
 }
@@ -129,7 +131,7 @@ object StreamMappers {
         it.toStreamDto()
     }
 
-    private fun Subscription.toStreamDto() = StreamDto(
+    fun Subscription.toStreamDto() = StreamDto(
         id = streamId,
         name = name,
         isSelected = false,

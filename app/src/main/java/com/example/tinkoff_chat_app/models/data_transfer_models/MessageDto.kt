@@ -7,5 +7,6 @@ data class MessageDto(
     val senderId: Int,
     val msg: String,
     val reactions: List<ReactionDto>,
-    val date: Int
+    val date: Int,
+    val topic: String
 )

@@ -1,23 +1,21 @@
 package com.example.tinkoff_chat_app.screens.message
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tinkoff_chat_app.domain.repository.messages_repository.MessagesRepository
-import com.example.tinkoff_chat_app.domain.repository.messages_repository.MessagesRepositoryImpl
 import com.example.tinkoff_chat_app.domain.usecases.messages.ChangeReactionSelectedStateUseCase
 import com.example.tinkoff_chat_app.domain.usecases.messages.SendMessageUseCase
 import com.example.tinkoff_chat_app.domain.usecases.messages.SubscribeForMessagesUseCase
 import com.example.tinkoff_chat_app.models.ui_models.MessageReaction
 import com.example.tinkoff_chat_app.screens.message.MessagesIntents.*
+import com.example.tinkoff_chat_app.utils.Network.BASE_URL_FILES_UPLOAD
 import com.example.tinkoff_chat_app.utils.Network.MESSAGES_TO_LOAD
+import com.example.tinkoff_chat_app.utils.RealTimeEvents.LAST_EVENT_ID_KEY
 import com.example.tinkoff_chat_app.utils.Resource
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,18 +30,22 @@ class MessagesViewModel @Inject constructor(
     private val _screenState: MutableStateFlow<MessageScreenUiState> =
         MutableStateFlow(MessageScreenUiState())
     val screenState get() = _screenState.asStateFlow()
+    private var isSubscribedForMessages: Boolean = false
 
     private val currState
         get() = screenState.value
 
     private val topicName
-        get() = currState.topic!!
+        get() = currState.topic
 
     private val streamName
         get() = currState.stream!!
 
     private val streamId
         get() = currState.streamId!!
+
+    private val allTopics
+        get() = currState.allTopics
 
     init {
         subscribeForIntents()
@@ -59,21 +61,29 @@ class MessagesViewModel @Inject constructor(
                                 currState.copy(
                                     streamId = it.streamName,
                                     stream = it.streamName,
-                                    topic = it.topicName
+                                    topic = it.topicName,
+                                    allTopics = it.allTopics
                                 )
                             )
-                            subscribeForMessages()
-                            messageRepo.loadMessagesWhenStart(
-                                topicName = it.topicName,
-                                streamName = it.streamName,
-                                amount = MESSAGES_TO_LOAD,
-                                lastMsgId = null,
-                                shouldFetch = true
-                            )
+                            if (!isSubscribedForMessages) {
+                                subscribeForMessages()
+                                viewModelScope.launch {
+                                    subscribeForUpdates()
+                                }
+                                messageRepo.loadMessagesWhenStart(
+                                    topicName = it.topicName,
+                                    streamName = it.streamName,
+                                    amount = MESSAGES_TO_LOAD,
+                                    lastMsgId = null,
+                                    shouldFetch = true
+                                )
+                                isSubscribedForMessages = true
+                            }
                         }
-                        is UpdateMessagesIntent -> updateMessages()
                         is SendMessageIntent -> sendMessage(
+                            topic = it.topic,
                             content = it.content,
+                            onError = it.onError
                         )
                         is ChangeReactionStateIntent -> changeReactionState(
                             reaction = it.reaction,
@@ -85,71 +95,114 @@ class MessagesViewModel @Inject constructor(
                             it.amount,
                             it.lastMsgId,
                         )
+                        is DeleteMessageIntent -> messageRepo.deleteMessage(it.msgId)
+                        is EditMessageIntent -> try {
+                            messageRepo.updateMessageContent(
+                                it.msgId,
+                                it.newMessageContent
+                            )
+                            messageRepo.fetchMessage(
+                                it.msgId,
+                                allTopics
+                            )
+                        } catch (e: Exception) {
+                            it.onError(e.message ?: "An error occurred editing message.")
+                        }
+                        is ChangeMessageTopicIntent -> try {
+                            messageRepo.updateMessageTopic(
+                                it.msgId,
+                                it.newTopicName
+                            )
+                            messageRepo.fetchMessage(
+                                it.msgId,
+                                allTopics
+                            )
+                        } catch (e: Exception) {
+                            it.onError(e.message ?: "An error occurred changing topic.")
+                        }
+                        is UploadFileIntent -> try {
+                            val fileUrl = messageRepo.uploadFile(
+                                file = it.file,
+                                fileName = it.fileName
+                            )
+                            sendMessageUseCase(
+                                topicName = it.topic,
+                                content = BASE_URL_FILES_UPLOAD + fileUrl!!,
+                                streamId = streamId
+                            )
+                        } catch (e: Exception) {
+                            it.onError("An error occurred loading file. $e")
+                        }
                     }
                 }
+        }
+    }
+
+    private suspend fun subscribeForUpdates() {
+        try {
+            val queue =
+                messageRepo.registerQueue(topicName, streamName).toMutableMap()
+            while (true) {
+                try {
+                    val newEventId = messageRepo.getEventsFromQueue(
+                        queue = queue
+                    )
+                    if (queue[LAST_EVENT_ID_KEY] == newEventId)
+                        delay(1000L)
+                    queue[LAST_EVENT_ID_KEY] = newEventId
+                } catch (_: Exception) { }
+                delay(500L)
+            }
+        } catch (_: Exception) {
         }
     }
 
     @OptIn(FlowPreview::class)
     private suspend fun subscribeForMessages() {
         viewModelScope.launch {
-            subscribeForMessagesUseCase()
+            subscribeForMessagesUseCase(allTopics)
                 .debounce(50L)
                 .collect {
-                Log.d("TAGTAGTAG", "COLLECTED")
-                when (it) {
-                    is Resource.Error -> {
-                        _screenState.emit(
-                            currState.copy(
-                                error = it.error
+                    when (it) {
+                        is Resource.Error -> {
+                            _screenState.emit(
+                                currState.copy(
+                                    error = it.error
+                                )
                             )
-                        )
-                    }
-                    is Resource.Loading -> {}
-                    is Resource.Success -> {
-                        _screenState.emit(
-                            currState.copy(
-                                messages = it.data
+                        }
+                        is Resource.Loading -> {}
+                        is Resource.Success -> {
+                            _screenState.emit(
+                                currState.copy(
+                                    messages = it.data
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
         }
     }
 
-    private suspend fun changeReactionState(reaction: MessageReaction, msgId: String) {
-        val state = try {
+    private suspend fun changeReactionState(reaction: MessageReaction, msgId: Int) {
+        try {
             changeReactionSelectedStateUseCase(reaction, msgId)
-            currState
-        } catch (e: Exception) {
-            currState.copy(
-                isLoading = false,
-                error = e
-            )
+        } catch (_: Exception) {
+
         }
-        _screenState.emit(state)
     }
 
-    private suspend fun sendMessage(content: String) {
-        val state = try {
+    private suspend fun sendMessage(topic: String, content: String, onError: () -> Unit) {
+        try {
             sendMessageUseCase(
                 content = content,
-                topicName = topicName,
+                topicName = topic,
                 streamId = streamId
             )
             currState
         } catch (e: Exception) {
-            currState.copy(
-                error = e,
-                isLoading = false
-            )
+            onError()
         }
-        _screenState.emit(state)
-    }
-
-    private suspend fun updateMessages() {
-        (messageRepo as MessagesRepositoryImpl).reloadMessages(streamName, topicName)
     }
 }
 

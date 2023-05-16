@@ -18,5 +18,7 @@ data class Message(
     @Json(name = "timestamp")
     val timestamp: Int,
     @Json(name = "sender_full_name")
-    val senderFullName: String
+    val senderFullName: String,
+    @Json(name = "subject")
+    val topic: String
 )

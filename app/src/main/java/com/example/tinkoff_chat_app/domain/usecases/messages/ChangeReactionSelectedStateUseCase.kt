@@ -8,7 +8,7 @@ class ChangeReactionSelectedStateUseCase @Inject constructor(
     private val msgRepo: MessagesRepository
 ) {
     suspend operator fun invoke(
-        reaction: MessageReaction, msgId: String
+        reaction: MessageReaction, msgId: Int
     ) {
         if (reaction.isSelected) {
             reaction.isSelected = false

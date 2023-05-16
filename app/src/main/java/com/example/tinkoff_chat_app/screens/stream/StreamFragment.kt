@@ -27,29 +27,56 @@ import javax.inject.Inject
 
 class StreamFragment : Fragment() {
 
+    private var createNewStreamDialog: StreamCreateDialog? = null
     private var _binding: FragmentChannelsBinding? = null
     private val binding get() = _binding!!
     private val streamAdapter: StreamAdapter by lazy {
-        StreamAdapter(requireContext(), findNavController()) {
-            lifecycleScope.launch {
-                viewModel.streamChannel.send(
-                    StreamIntents.ShowCurrentStreamTopicsIntent(
-                        it
-                    ) {
-                        showErrorToast("An error occurred while loading topics...")
-                    }
-                )
+        StreamAdapter(
+            context = requireContext(),
+            onStreamClickListener = { stream ->
+                val action =
+                    StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
+                        stream = stream,
+                        topicName = null,
+                        allTopics = true,
+                        topicId = "wrong topic id"
+                    )
+                findNavController().navigate(action)
+            },
+            onCreateNewStreamClickListener = { showCreateNewStreamDialog() },
+            onTopicClickListener = { stream, topic ->
+                val action =
+                    StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
+                        stream = stream,
+                        topicName = topic.name,
+                        allTopics = false,
+                        topicId = "wrong topic id"
+                    )
+                findNavController().navigate(action)
+            },
+            onOpenStreamClickListener = { stream ->
+                lifecycleScope.launch {
+                    viewModel.streamChannel.send(
+                        StreamIntents.ShowCurrentStreamTopicsIntent(
+                            stream
+                        ) {
+                            showErrorToast("An error occurred while loading topics...")
+                        }
+                    )
+                }
             }
-        }
+        )
     }
 
-    private val showSubscribed: Boolean
+    private
+    val showSubscribed: Boolean
         get() = binding.tlSelectChannel.selectedTabPosition == 0
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private val viewModel by viewModels<StreamViewModel> {
+    private
+    val viewModel by viewModels<StreamViewModel> {
         viewModelFactory
     }
 
@@ -76,10 +103,22 @@ class StreamFragment : Fragment() {
         return binding.root
     }
 
-    private val textWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+    private
+    val textWatcher = object : TextWatcher {
+        override fun beforeTextChanged(
+            s: CharSequence?,
+            start: Int,
+            count: Int,
+            after: Int
+        ) {
+        }
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+        override fun onTextChanged(
+            s: CharSequence?,
+            start: Int,
+            before: Int,
+            count: Int
+        ) {
         }
 
         override fun afterTextChanged(s: Editable?) {
@@ -102,7 +141,8 @@ class StreamFragment : Fragment() {
         binding.etChannelsSearch.addTextChangedListener(textWatcher)
     }
 
-    private val tabListener = object : TabLayout.OnTabSelectedListener {
+    private
+    val tabListener = object : TabLayout.OnTabSelectedListener {
         override fun onTabSelected(tab: TabLayout.Tab?) {
             lifecycleScope.launch {
                 viewModel.streamChannel.send(
@@ -129,7 +169,8 @@ class StreamFragment : Fragment() {
         val rvLayoutManager = LinearLayoutManager(context)
         rvLayoutManager.generateDefaultLayoutParams()
         binding.rvStreams.layoutManager = rvLayoutManager
-        (binding.rvStreams.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+        (binding.rvStreams.itemAnimator as SimpleItemAnimator).supportsChangeAnimations =
+            true
     }
 
     private fun render(state: StreamScreenUiState) {
@@ -165,10 +206,42 @@ class StreamFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        binding.etChannelsSearch.removeTextChangedListener(textWatcher)
+        binding.etChannelsSearch.removeTextChangedListener(
+            textWatcher
+        )
         _binding = null
         super.onDestroyView()
     }
 
-    private fun showErrorToast(message: String) = Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    private fun showErrorToast(message: String) =
+        Toast.makeText(
+            requireContext(),
+            message,
+            Toast.LENGTH_SHORT
+        ).show()
+
+    private fun showCreateNewStreamDialog() {
+        if (!(createNewStreamDialog != null
+            && createNewStreamDialog!!.dialog != null
+            && createNewStreamDialog!!.dialog!!.isShowing
+            && !createNewStreamDialog!!.isRemoving)
+        ) {
+            createNewStreamDialog =
+                StreamCreateDialog.newInstance { streamName, streamDisc, announce ->
+                    lifecycleScope.launch {
+                        viewModel.streamChannel.send(
+                            StreamIntents.CreateNewStreamIntent(
+                                name = streamName.take(60),
+                                description = streamDisc,
+                                announce = announce
+                            ) {
+                                showErrorToast("Failed to create new stream.")
+                            }
+                        )
+                    }
+                }
+            createNewStreamDialog!!.show(childFragmentManager, "stream_dialog")
+        }
+    }
+
 }

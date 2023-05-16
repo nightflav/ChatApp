@@ -7,8 +7,9 @@
     android:layout_height="wrap_content"
     android:gravity="end"
     android:orientation="vertical"
-    android:paddingTop="8dp"
-    android:paddingHorizontal="8dp">
+    android:paddingHorizontal="8dp"
+    android:paddingTop="8dp">
+
 
     <TextView
         android:id="@+id/tv_sent_message"
@@ -18,8 +19,25 @@
         android:background="@drawable/bg_sent_message"
         android:paddingHorizontal="16dp"
         android:paddingVertical="10dp"
-        tools:text="Test message"
-        android:textColor="@color/white_text" />
+        android:textColor="@color/white_text"
+        tools:text="Test message" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_image_message_sent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_margin="8dp"
+        android:importantForAccessibility="no"
+        android:maxWidth="350dp"
+        android:maxHeight="600dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_sent_message_download_attachment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/tap_to_download" />
 
     <com.example.tinkoff_chat_app.views.ReactionsViewGroup
         android:id="@+id/react_sent_message"

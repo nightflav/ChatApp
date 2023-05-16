@@ -26,15 +26,39 @@ class StreamViewModel @Inject constructor(
     val screenState get() = _screenState.asStateFlow()
     private val currState
         get() = screenState.value
+    private var shouldFetch = true
+    private var shouldFetchSubs = true
 
     init {
         subscribeToIntents()
+//        Need further implementation
+//        viewModelScope.launch {
+//            subscribeForUpdates()
+//        }
         viewModelScope.launch {
             streamChannel.send(
                 StreamIntents.InitStreamsIntent
             )
         }
     }
+
+//    private suspend fun subscribeForUpdates() {
+//        try {
+//            val queue =
+//                streamsRepo.registerQueue("subscription").toMutableMap()
+//            while (true) {
+//                try {
+//                    val newEventId = streamsRepo.getEventsFromQueue(
+//                        queue = queue
+//                    )
+//                    queue[RealTimeEvents.LAST_EVENT_ID_KEY] = newEventId
+//                } catch (_: Exception) {
+//                }
+//                delay(500L)
+//            }
+//        } catch (_: Exception) {
+//        }
+//    }
 
     @OptIn(FlowPreview::class)
     private fun subscribeToIntents() {
@@ -66,16 +90,34 @@ class StreamViewModel @Inject constructor(
                             )
                             updateUi(onError = it.onError)
                         }
+                        is StreamIntents.CreateNewStreamIntent -> {
+                            streamsRepo.subscribeForStream(
+                                it.name,
+                                it.description,
+                                it.announce
+                            )
+                            if (currState.showSubs)
+                                streamsRepo.loadAllSubscriptions(true) {
+                                    it.onError()
+                                }
+                            else
+                                streamsRepo.loadAllSubscriptions(true) {
+                                    it.onError()
+                                }
+                        }
                     }
                 }
         }
     }
 
     private suspend fun updateUi(onError: () -> Unit) {
-        if (currState.showSubs)
-            streamsRepo.loadAllSubscriptions(true) { onError() }
-        else
-            streamsRepo.loadAllStreams(true) { onError() }
+        if (currState.showSubs) {
+            streamsRepo.loadAllSubscriptions(shouldFetchSubs) { onError() }
+            shouldFetchSubs = false
+        } else {
+            streamsRepo.loadAllStreams(shouldFetch) { onError() }
+            shouldFetch = false
+        }
     }
 
     private suspend fun subscribeForStreams() {
@@ -184,9 +226,10 @@ class StreamViewModel @Inject constructor(
         return result
     }
 
-    private fun List<StreamScreenItem>?.removeAllShimmers(): List<StreamScreenItem>? = this?.filter {
-        (it is TopicModel && it.id != "shimmer") || it is StreamModel
-    }
+    private fun List<StreamScreenItem>?.removeAllShimmers(): List<StreamScreenItem>? =
+        this?.filter {
+            (it is TopicModel && it.id != "shimmer") || it is StreamModel
+        }
 }
 
 

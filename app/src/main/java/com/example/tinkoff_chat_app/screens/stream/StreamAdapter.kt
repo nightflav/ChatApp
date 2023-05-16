@@ -8,7 +8,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat.getColor
-import androidx.navigation.NavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tinkoff_chat_app.R
@@ -18,17 +17,25 @@ import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.TopicM
 
 class StreamAdapter(
     private val context: Context,
-    private val navController: NavController,
-    private val onStreamClickListener: (StreamModel) -> Unit
+    private val onCreateNewStreamClickListener: () -> Unit,
+    private val onStreamClickListener: (StreamModel) -> Unit,
+    private val onTopicClickListener: (StreamModel, TopicModel) -> Unit,
+    private val onOpenStreamClickListener: (StreamModel) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private companion object {
-        private const val TOPIC_VIEW_TYPE = 0
-        private const val CHANNEL_VIEW_TYPE = 1
+        private const val TOPIC_VIEW_TYPE = 1
+        private const val CHANNEL_VIEW_TYPE = 0
         private const val SHIMMER_VIEW_TYPE = -1
+        private const val CREATE_NEW_STREAM_TYPE = 100
+
+        object CreateNewStream : StreamScreenItem() {
+            override val adapterId: String
+                get() = "unique id for create new stream"
+        }
     }
 
-    private var dataList = emptyList<StreamScreenItem>()
+    private var dataList = listOf<StreamScreenItem>(CreateNewStream)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -41,6 +48,10 @@ class StreamAdapter(
             )
             CHANNEL_VIEW_TYPE -> StreamViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.stream_layout, parent, false)
+            )
+            CREATE_NEW_STREAM_TYPE -> AddNewStreamViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.add_new_stream_layout, parent, false)
             )
             else -> throw java.lang.Exception("No Such View Type")
         }
@@ -56,25 +67,31 @@ class StreamAdapter(
             is TopicViewHolder -> {
                 holder.bind(dataList[position] as TopicModel)
             }
+            is AddNewStreamViewHolder -> {
+                holder.bind()
+            }
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (val currItem = dataList[position]) {
-            is TopicModel -> if (currItem.isLoading) SHIMMER_VIEW_TYPE else TOPIC_VIEW_TYPE
+        return when (dataList[position]) {
+            is TopicModel -> if ((dataList[position] as TopicModel).isLoading) SHIMMER_VIEW_TYPE else TOPIC_VIEW_TYPE
             is StreamModel -> CHANNEL_VIEW_TYPE
+            CreateNewStream -> CREATE_NEW_STREAM_TYPE
             else -> throw IllegalStateException()
         }
     }
 
     fun submitList(streams: List<StreamScreenItem>) {
+        val tmpStreams = streams.toMutableList()
+        tmpStreams.add(CreateNewStream)
         val diffUtil = DiffCallback(
             dataList,
-            streams
+            tmpStreams
         )
         val diffResult = DiffUtil.calculateDiff(diffUtil)
         diffResult.dispatchUpdatesTo(this)
-        dataList = streams
+        dataList = tmpStreams
     }
 
     class DiffCallback(
@@ -88,13 +105,7 @@ class StreamAdapter(
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val item1 = oldList[oldItemPosition]
             val item2 = newList[newItemPosition]
-            return if (item1 is StreamModel && item2 is StreamModel)
-                item1.id == item2.id
-            else
-                if (item1 is TopicModel && item2 is TopicModel)
-                    item1.id == item2.id
-                else
-                    false
+            return item1.adapterId == item2.adapterId
         }
 
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -114,6 +125,9 @@ class StreamAdapter(
             itemView.setOnClickListener {
                 onStreamClickListener(stream)
             }
+            streamArrow.setOnClickListener {
+                onOpenStreamClickListener(stream)
+            }
             val imageToShow = if (stream.isSelected)
                 AppCompatResources.getDrawable(context, R.drawable.ic_close_arrow)
             else
@@ -129,6 +143,7 @@ class StreamAdapter(
 
         fun bind(topic: TopicModel) {
             topicName.text = topic.name
+            val stream = dataList.lastInstanceBefore<StreamModel>(topic)!!
             topicMsgCount.text = topic.msgCount.toString()
             when (topic.msgCount) {
                 in 0..50 -> itemView.setBackgroundColor(getColor(context, R.color.color_range_0_50))
@@ -153,15 +168,27 @@ class StreamAdapter(
                 else -> itemView.setBackgroundColor(getColor(context, R.color.color_range_501_inf))
             }
             itemView.setOnClickListener {
-                val action =
-                    StreamFragmentDirections.actionChannelsFragmentToMessagesFragment(
-                        topicId = topic.id,
-                        streamId = topic.parentId,
-                        topicName = topic.name,
-                        streamName = topic.parentName
-                    )
-                navController.navigate(action)
+                onTopicClickListener(stream, topic)
             }
         }
+    }
+
+    inner class AddNewStreamViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        fun bind() {
+            itemView.setOnClickListener {
+                onCreateNewStreamClickListener()
+            }
+        }
+    }
+
+    private inline fun <reified T> List<*>.lastInstanceBefore(before: Any): T? {
+        var currItem: T? = null
+        for (item in this) {
+            if (item is T)
+                currItem = item
+            if (item == before)
+                return currItem
+        }
+        return null
     }
 }

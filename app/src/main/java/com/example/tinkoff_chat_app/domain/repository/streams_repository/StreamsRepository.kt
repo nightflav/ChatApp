@@ -24,4 +24,18 @@ interface StreamsRepository {
         newTopics: List<TopicDto>,
     )
 
+    suspend fun subscribeForStream(
+        streamName: String,
+        description: String?,
+        announce: Boolean
+    )
+
+    suspend fun registerQueue(
+        type: String
+    ): Map<String, String>
+
+    suspend fun getEventsFromQueue(
+        queue: Map<String, String>
+    ): String
+
 }

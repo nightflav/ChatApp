@@ -16,6 +16,8 @@ import com.example.tinkoff_chat_app.domain.repository.streams_repository.Streams
 import com.example.tinkoff_chat_app.domain.repository.topics_repository.TopicsRepository
 import com.example.tinkoff_chat_app.domain.repository.topics_repository.TopicsRepositoryImpl
 import com.example.tinkoff_chat_app.network.ChatApi
+import com.example.tinkoff_chat_app.network.downloader.Downloader
+import com.example.tinkoff_chat_app.network.downloader.DownloaderImpl
 import com.example.tinkoff_chat_app.utils.LocalData.SP_PROFILE
 import dagger.Module
 import dagger.Provides
@@ -23,6 +25,10 @@ import javax.inject.Singleton
 
 @Module
 class DataModule {
+
+    @Singleton
+    @Provides
+    fun provideDownloader(context: Context): Downloader = DownloaderImpl(context)
 
     @Singleton
     @Provides

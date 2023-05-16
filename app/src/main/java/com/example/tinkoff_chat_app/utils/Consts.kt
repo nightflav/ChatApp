@@ -2,6 +2,19 @@ package com.example.tinkoff_chat_app.utils
 
 import okhttp3.Credentials
 
+object RealTimeEvents {
+    const val QUEUE_ID_KEY = "queue_id"
+    const val LAST_EVENT_ID_KEY = "last_event_id"
+}
+
+object MsgAdapterConsts {
+    const val CHANGE_MESSAGE_TOPIC_ID = 100
+    const val DELETE_MESSAGE_ID = 101
+    const val EDIT_MESSAGE_ID = 102
+    const val COPY_MESSAGE_ID = 103
+    const val ADD_REACTION_ID = 104
+}
+
 object LocalData {
     const val MESSAGE_TABLE_NAME = "message_table"
     const val STREAM_TABLE_NAME = "streams_table"
@@ -17,6 +30,7 @@ object LocalData {
 object Network {
     private const val USER_EMAIL = "iamsoalivenow@gmail.com"
     private const val API_KEY = "wKUjjObJDaru9ErHEf9ryU3yZ7NFvikA"
+    const val BASE_URL_FILES_UPLOAD = "https://tinkoff-android-spring-2023.zulipchat.com"
     const val BASE_URL = "https://tinkoff-android-spring-2023.zulipchat.com/api/v1/"
     val AUTH_KEY: String = Credentials.basic(USER_EMAIL, API_KEY)
     const val MISSING_AVATAR_URL =

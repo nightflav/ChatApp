@@ -14,23 +14,23 @@
         android:layout_height="wrap_content"
         android:indeterminate="true"
         android:visibility="gone"
+        app:indicatorColor="@color/secondary_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:indicatorColor="@color/secondary_color"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tv_messages_error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/error_text"
+        android:textColor="@color/offline_status"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:visibility="gone"
-        android:text="@string/error_text"
-        android:textColor="@color/offline_status"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/top_toolbar"
@@ -77,12 +77,45 @@
         android:id="@+id/rv_chat"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
+        android:paddingHorizontal="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_message_part"
+        app:layout_constraintBottom_toTopOf="@+id/ll_topic_selection"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_topic_name"/>
+        app:layout_constraintTop_toBottomOf="@+id/tv_topic_name" />
+
+    <LinearLayout
+        android:id="@+id/ll_topic_selection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/primary_variant"
+        android:padding="8dp"
+        app:layout_constraintBottom_toTopOf="@id/bottom_message_part">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/select_topic_for_message"
+            android:textColor="@color/light_gray_text"
+            android:textSize="20sp" />
+
+        <AutoCompleteTextView
+            android:id="@+id/et_topic_selector"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3.5"
+            android:autofillHints=""
+            android:background="@drawable/custom_edit_text_rounded"
+            android:drawablePadding="12dp"
+            android:hint="@string/topic_hint"
+            android:padding="6dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:textColor="@color/gray_text"
+            android:textColorHint="@color/light_light_gray_text" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/bottom_message_part"
@@ -90,40 +123,33 @@
         android:layout_height="wrap_content"
         android:background="@color/primary_variant"
         android:orientation="horizontal"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="8dp"
+        android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/et_message"
             android:layout_width="0dp"
             android:layout_height="48dp"
-            android:layout_marginHorizontal="8dp"
+            android:layout_gravity="center"
+            android:layout_margin="4dp"
             android:layout_weight="9"
             android:background="@drawable/bg_message_edit"
             android:hint="@string/enter_message_hint"
-            android:paddingHorizontal="16dp"
+            android:paddingHorizontal="12dp"
             android:textColor="@color/white_text"
             android:textColorHint="@color/gray_text" />
 
-        <ImageButton
+        <ImageView
             android:id="@+id/btn_send"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/bg_send_icon"
+            android:layout_gravity="center"
+            android:background="@color/primary_variant"
             android:contentDescription="@string/send_message_description"
-            android:src="@drawable/ic_add" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_add"
+            app:tint="@color/gray" />
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btn_tmp_refresh_messages"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:text="update msgs"
-        app:layout_constraintBottom_toBottomOf="@+id/top_toolbar"
-        app:layout_constraintEnd_toEndOf="@+id/top_toolbar"
-        app:layout_constraintTop_toTopOf="@+id/top_toolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

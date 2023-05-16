@@ -10,5 +10,6 @@ data class MessageScreenUiState(
     val error: Throwable? = null,
     val messages: List<MessageModel>? = null,
     val isNewMessagesLoading: Boolean = false,
-    val allMessagesLoaded: Boolean = false
+    val allMessagesLoaded: Boolean = false,
+    val allTopics: Boolean = false
 )
