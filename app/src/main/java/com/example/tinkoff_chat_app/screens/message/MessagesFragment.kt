@@ -411,7 +411,6 @@ class MessagesFragment : Fragment() {
                 )
             }").toUri()
             val file = typedUri.toFile()
-            Log.d("TAGTAGTAG", "${getMimeType(requireContext(), uri)}")
             val bytes = requireActivity().contentResolver.openInputStream(uri)?.buffered()
                 ?.use { it.readBytes() }
             lifecycleScope.launch {
