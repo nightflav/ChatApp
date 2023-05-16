@@ -348,17 +348,21 @@ class MessagesFragment : Fragment() {
     private fun setSendButtonOnClickListener() {
         binding.btnSend.setOnClickListener {
             if (binding.etMessage.text!!.isNotEmpty()) {
+                val topic = binding.etTopicSelector.text.toString()
                 if (!nowEditing)
-                    lifecycleScope.launch {
-                        viewModel.messagesChannel.send(
-                            MessagesIntents.SendMessageIntent(
-                                content = binding.etMessage.text.toString(),
-                                topic = topicName ?: binding.etTopicSelector.text.toString()
-                            ) {
-                                makeErrorToast("An error occurred sending message.")
-                            }
-                        )
-                    }
+                    if (topic.isEmpty() || topic.isBlank())
+                        makeErrorToast("Input topic name!")
+                    else
+                        lifecycleScope.launch {
+                            viewModel.messagesChannel.send(
+                                MessagesIntents.SendMessageIntent(
+                                    content = binding.etMessage.text.toString(),
+                                    topic = topicName ?: binding.etTopicSelector.text.toString()
+                                ) {
+                                    makeErrorToast("An error occurred sending message.")
+                                }
+                            )
+                        }
                 else {
                     lifecycleScope.launch {
                         viewModel.messagesChannel.send(
