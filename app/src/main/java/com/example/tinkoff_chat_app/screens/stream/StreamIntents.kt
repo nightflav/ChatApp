@@ -17,6 +17,6 @@ sealed class StreamIntents {
         val name: String,
         val description: String?,
         val announce: Boolean,
-        val onError: () -> Unit
+        val onError: (String) -> Unit
     ) : StreamIntents()
 }

@@ -1,6 +1,5 @@
 package com.example.tinkoff_chat_app.screens.stream
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tinkoff_chat_app.domain.repository.streams_repository.StreamsRepository
@@ -65,7 +64,8 @@ class StreamViewModel @Inject constructor(
     private fun subscribeToIntents() {
         viewModelScope.launch {
             streamChannel.consumeAsFlow()
-                .debounce(100L)
+                .debounce(200L)
+                .distinctUntilChanged()
                 .collect {
                     when (it) {
                         StreamIntents.InitStreamsIntent -> {
@@ -78,7 +78,6 @@ class StreamViewModel @Inject constructor(
                                     request = it.request
                                 )
                             )
-//                            updateUi(onError = it.onError)
                         }
                         is StreamIntents.ShowCurrentStreamTopicsIntent -> {
                             changeStreamSelectedState(it.stream, it.onError)
@@ -98,12 +97,12 @@ class StreamViewModel @Inject constructor(
                                 it.announce
                             )
                             if (currState.showSubs)
-                                streamsRepo.loadAllSubscriptions(true) {
-                                    it.onError()
+                                streamsRepo.loadAllSubscriptions(true) { message ->
+                                    it.onError(message)
                                 }
                             else
-                                streamsRepo.loadAllSubscriptions(true) {
-                                    it.onError()
+                                streamsRepo.loadAllSubscriptions(true) { message ->
+                                    it.onError(message)
                                 }
                         }
                     }
@@ -126,19 +125,10 @@ class StreamViewModel @Inject constructor(
             streamsRepo.currStreams.collect {
                 when (it) {
                     is Resource.Success -> {
-                        Log.d("TAGTAGTAG", "${it.data?.map { it.name }}")
-                        Log.d(
-                            "TAGTAGTAG",
-                            "${
-                                it.data?.toStreamModelList()?.applySearchFilter(currState.request)
-                                    ?.map { it.name }
-                            }"
-                        )
                         if (currState.streams != it.data && it.data!!.isNotEmpty())
                             _screenState.emit(
                                 currState.copy(
                                     streams = it.data.toStreamModelList()
-                                        .applySearchFilter(currState.request)
                                         .toListToShow(),
                                     isStreamsLoading = false
                                 )
@@ -219,17 +209,6 @@ class StreamViewModel @Inject constructor(
                         )
                     )
                 }
-            }
-        }
-        return result
-    }
-
-    private fun List<StreamModel>.applySearchFilter(request: String?): List<StreamModel> {
-        val result = mutableListOf<StreamModel>()
-        if (request.isNullOrBlank() || request.isEmpty()) return this
-        for (item in this) {
-            if (item.name.contains(request, true)) {
-                result.add(item)
             }
         }
         return result

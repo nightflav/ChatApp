@@ -101,9 +101,10 @@
             android:textSize="20sp" />
 
         <AutoCompleteTextView
+            android:completionThreshold="1"
             android:id="@+id/et_topic_selector"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="3.5"
             android:autofillHints=""
             android:background="@drawable/custom_edit_text_rounded"

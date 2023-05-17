@@ -1,19 +1,19 @@
 package com.example.tinkoff_chat_app.screens.message
 
 import com.example.tinkoff_chat_app.models.ui_models.MessageReaction
+import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamModel
 
 sealed class MessagesIntents {
     data class InitMessagesIntent(
-        val streamName: String,
+        val stream: StreamModel,
         val topicName: String?,
-        val streamId: Int,
         val allTopics: Boolean
     ) : MessagesIntents()
 
     data class SendMessageIntent(val topic: String, val content: String, val onError: () -> Unit) :
         MessagesIntents()
 
-    data class ChangeReactionStateIntent(val reaction: MessageReaction, val msgId: Int) :
+    data class ChangeReactionStateIntent(val reaction: MessageReaction, val msgId: Int, val onError: (String) -> Unit) :
         MessagesIntents()
 
     data class LoadMessagesIntent(val amount: Int, val lastMsgId: Int?) : MessagesIntents()

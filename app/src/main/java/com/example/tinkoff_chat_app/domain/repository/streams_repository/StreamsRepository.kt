@@ -11,12 +11,12 @@ interface StreamsRepository {
 
     suspend fun loadAllStreams(
         shouldFetch: Boolean,
-        onError: () -> Unit
+        onError: (String) -> Unit
     )
 
     suspend fun loadAllSubscriptions(
         shouldFetch: Boolean,
-        onError: () -> Unit
+        onError: (String) -> Unit
     )
 
     suspend fun updateStreamTopics(

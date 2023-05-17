@@ -9,7 +9,7 @@ class SendMessageUseCase @Inject constructor(
     suspend operator fun invoke(
         topicName: String,
         content: String,
-        streamId: String
+        streamId: Int
     ) = msgRepo.sendMessage(
         topicName = topicName,
         content = content,

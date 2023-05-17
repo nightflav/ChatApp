@@ -62,7 +62,7 @@ interface ChatApi {
     @POST("messages")
     suspend fun sendMessage(
         @Query("type") type: String = "stream",
-        @Query("to") to: String,
+        @Query("to") to: Int,
         @Query("content") content: String,
         @Query("topic") topic: String,
     )

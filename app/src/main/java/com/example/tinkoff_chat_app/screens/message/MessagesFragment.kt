@@ -9,12 +9,12 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,6 +60,8 @@ import java.io.File
 import javax.inject.Inject
 
 class MessagesFragment : Fragment() {
+
+    @Suppress("deprecation")
     private fun isNetworkAvailable(context: Context?): Boolean {
         if (context == null) return false
         val connectivityManager =
@@ -90,18 +92,10 @@ class MessagesFragment : Fragment() {
     }
 
     private val args: MessagesFragmentArgs by navArgs()
-
-    private val stream by lazy {
-        args.stream
-    }
-    private val topicName by lazy {
-        args.topicName
-    }
+    private val stream by lazy { args.stream }
+    private val topicName by lazy { args.topicName }
     private val streamName by lazy { stream.name }
-    private val streamId by lazy { stream.id }
-    private val allTopics by lazy {
-        args.allTopics
-    }
+    private val allTopics by lazy { args.allTopics }
     private val getPhoto =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
@@ -116,7 +110,6 @@ class MessagesFragment : Fragment() {
             } else
                 makeErrorToast("Incorrect file or its size is too big.")
         }
-
     private var isLoading = false
     private var allMessagesLoaded = false
     private var nowEditing = false
@@ -187,9 +180,8 @@ class MessagesFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.messagesChannel.send(
                 MessagesIntents.InitMessagesIntent(
-                    streamName,
+                    stream,
                     topicName,
-                    streamId,
                     allTopics
                 )
             )
@@ -213,7 +205,12 @@ class MessagesFragment : Fragment() {
     }
 
     private fun initTopicSelector() {
-
+        val autoCompleteAdapter = ArrayAdapter(
+            requireContext(),
+            androidx.appcompat.R.layout.support_simple_spinner_dropdown_item,
+            stream.topics?.map { it.name } ?: emptyList()
+        )
+        binding.etTopicSelector.setAdapter(autoCompleteAdapter)
     }
 
     private fun onMessageLongClick(msg: MessageModel, context: Context, onlyReactions: Boolean) {
@@ -284,7 +281,9 @@ class MessagesFragment : Fragment() {
                 MessagesIntents.ChangeReactionStateIntent(
                     reaction = reaction,
                     msgId = msgId
-                )
+                ) {
+                    makeErrorToast(it)
+                }
             )
         }
     }
@@ -413,8 +412,8 @@ class MessagesFragment : Fragment() {
                 )
             }").toUri()
             val file = typedUri.toFile()
-            val bytes = requireActivity().contentResolver.openInputStream(uri)?.buffered()
-                ?.use { it.readBytes() }
+            val bytes =
+                requireActivity().contentResolver.openInputStream(uri)?.use { it.readBytes() }
             lifecycleScope.launch {
                 viewModel.messagesChannel.send(
                     MessagesIntents.UploadFileIntent(
@@ -427,7 +426,6 @@ class MessagesFragment : Fragment() {
                 )
             }
         } catch (e: Exception) {
-            Log.d("TAGTAGTAG", "$e")
             makeErrorToast("An error occurred selecting file.")
         }
     }

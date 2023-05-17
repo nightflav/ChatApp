@@ -219,7 +219,7 @@ class MessagesRepositoryImpl @Inject constructor(
     override suspend fun deleteMessage(msgId: Int) = chatApi.deleteMessage(msgId)
 
     override suspend fun sendMessage(
-        topicName: String, content: String, streamId: String
+        topicName: String, content: String, streamId: Int
     ) = chatApi.sendMessage(
         to = streamId, content = content, topic = topicName
     )

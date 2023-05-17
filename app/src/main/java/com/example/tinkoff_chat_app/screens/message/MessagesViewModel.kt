@@ -14,7 +14,6 @@ import com.example.tinkoff_chat_app.utils.RealTimeEvents.LAST_EVENT_ID_KEY
 import com.example.tinkoff_chat_app.utils.Resource
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,10 +38,10 @@ class MessagesViewModel @Inject constructor(
         get() = currState.topic
 
     private val streamName
-        get() = currState.stream!!
+        get() = currState.stream!!.name
 
     private val streamId
-        get() = currState.streamId!!
+        get() = currState.stream!!.id
 
     private val allTopics
         get() = currState.allTopics
@@ -59,8 +58,7 @@ class MessagesViewModel @Inject constructor(
                         is InitMessagesIntent -> {
                             _screenState.emit(
                                 currState.copy(
-                                    streamId = it.streamName,
-                                    stream = it.streamName,
+                                    stream = it.stream,
                                     topic = it.topicName,
                                     allTopics = it.allTopics
                                 )
@@ -72,7 +70,7 @@ class MessagesViewModel @Inject constructor(
                                 }
                                 messageRepo.loadMessagesWhenStart(
                                     topicName = it.topicName,
-                                    streamName = it.streamName,
+                                    streamName = it.stream.name,
                                     amount = MESSAGES_TO_LOAD,
                                     lastMsgId = null,
                                     shouldFetch = true
@@ -88,7 +86,9 @@ class MessagesViewModel @Inject constructor(
                         is ChangeReactionStateIntent -> changeReactionState(
                             reaction = it.reaction,
                             msgId = it.msgId
-                        )
+                        ) { message ->
+                            it.onError(message)
+                        }
                         is LoadMessagesIntent -> messageRepo.loadNewMessages(
                             topicName,
                             streamName,
@@ -147,11 +147,9 @@ class MessagesViewModel @Inject constructor(
                     val newEventId = messageRepo.getEventsFromQueue(
                         queue = queue
                     )
-                    if (queue[LAST_EVENT_ID_KEY] == newEventId)
-                        delay(1000L)
                     queue[LAST_EVENT_ID_KEY] = newEventId
-                } catch (_: Exception) { }
-                delay(500L)
+                } catch (_: Exception) {
+                }
             }
         } catch (_: Exception) {
         }
@@ -184,11 +182,15 @@ class MessagesViewModel @Inject constructor(
         }
     }
 
-    private suspend fun changeReactionState(reaction: MessageReaction, msgId: Int) {
+    private suspend fun changeReactionState(
+        reaction: MessageReaction,
+        msgId: Int,
+        onError: (String) -> Unit
+    ) {
         try {
             changeReactionSelectedStateUseCase(reaction, msgId)
         } catch (_: Exception) {
-
+            onError("An error occurred adding reaction.")
         }
     }
 

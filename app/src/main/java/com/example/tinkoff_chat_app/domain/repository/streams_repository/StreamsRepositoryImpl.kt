@@ -11,6 +11,7 @@ import com.example.tinkoff_chat_app.utils.StreamMappers.toDatabaseStreamModel
 import com.example.tinkoff_chat_app.utils.StreamMappers.toDatabaseSubscriptionModel
 import com.example.tinkoff_chat_app.utils.StreamMappers.toStreamDtoList
 import kotlinx.coroutines.flow.MutableStateFlow
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class StreamsRepositoryImpl @Inject constructor(
@@ -23,7 +24,7 @@ class StreamsRepositoryImpl @Inject constructor(
 
     override suspend fun loadAllStreams(
         shouldFetch: Boolean,
-        onError: () -> Unit
+        onError: (String) -> Unit
     ) {
         val data = streamDao.getAllStreams().toStreamDtoList()
         currStreams.emit(
@@ -40,14 +41,22 @@ class StreamsRepositoryImpl @Inject constructor(
                     chatApi.getStreams().body()!!.streams.toStreamDtoList().toMutableList()
                 streamDao.deleteAllStreams()
                 streamDao.addStreams(
-                    networkData.map { it.toDatabaseStreamModel() })
+                    networkData.map { it.toDatabaseStreamModel() }
+                )
                 currStreams.emit(
                     Resource.Success(
                         data = networkData
                     )
                 )
+            } catch (e: HttpException) {
+                onError("An issue occurred with internet connection.")
+                currStreams.emit(
+                    Resource.Success(
+                        data = data
+                    )
+                )
             } catch (e: Exception) {
-                onError()
+                onError("An issue occurred.")
                 currStreams.emit(
                     Resource.Success(
                         data = data
@@ -65,7 +74,7 @@ class StreamsRepositoryImpl @Inject constructor(
 
     override suspend fun loadAllSubscriptions(
         shouldFetch: Boolean,
-        onError: () -> Unit
+        onError: (String) -> Unit
     ) {
         val data = streamDao.getAllSubscriptions().toStreamDtoList()
         currStreams.emit(
@@ -90,8 +99,15 @@ class StreamsRepositoryImpl @Inject constructor(
                         data = networkData
                     )
                 )
+            } catch (e: HttpException) {
+                onError("An issue occurred with internet connection.")
+                currStreams.emit(
+                    Resource.Success(
+                        data = data
+                    )
+                )
             } catch (e: Exception) {
-                onError()
+                onError("An issue occurred.")
                 currStreams.emit(
                     Resource.Success(
                         data = data

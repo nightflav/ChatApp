@@ -35,7 +35,7 @@ interface MessagesRepository {
     suspend fun sendMessage(
         topicName: String,
         content: String,
-        streamId: String
+        streamId: Int
     )
 
     suspend fun sendReaction(
