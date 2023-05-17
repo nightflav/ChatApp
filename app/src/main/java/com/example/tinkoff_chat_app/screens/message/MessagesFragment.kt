@@ -319,7 +319,7 @@ class MessagesFragment : Fragment() {
             if (binding.etMessage.text!!.isNotEmpty()) {
                 val topic = binding.etTopicSelector.text.toString().lowercase()
                 if (!nowEditing)
-                    if (topic.isEmpty() || topic.isBlank())
+                    if (topic.isBlank() && topicName == null)
                         makeErrorToast("Input topic name!")
                     else
                         lifecycleScope.launch {
