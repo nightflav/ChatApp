@@ -1,7 +1,6 @@
 package com.example.tinkoff_chat_app.screens.message
 
 import android.content.Context
-import android.util.Log
 import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.View
@@ -15,9 +14,11 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import com.example.tinkoff_chat_app.R
 import com.example.tinkoff_chat_app.models.ui_models.MessageModel
 import com.example.tinkoff_chat_app.models.ui_models.MessageReaction
@@ -37,6 +38,7 @@ import com.example.tinkoff_chat_app.views.ReactionsViewGroup
 import com.google.android.material.imageview.ShapeableImageView
 import kotlin.random.Random
 
+
 class MessageAdapter(
     private val onMessageLongClickListener: (MessageModel, Boolean) -> Unit,
     private val context: Context,
@@ -45,6 +47,10 @@ class MessageAdapter(
     private val downloader: Downloader,
     private val isConnectionAvailable: Boolean
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    private var options: RequestOptions = RequestOptions()
+        .placeholder(R.drawable.loading_image_indicator)
+        .diskCacheStrategy(DiskCacheStrategy.ALL)
 
     private var messages: List<MessageModel> = emptyList()
 
@@ -166,6 +172,7 @@ class MessageAdapter(
                     )
                     Glide.with(context)
                         .load(imageUrl)
+                        .apply(options)
                         .transform(RoundedCorners(16))
                         .into(msgVg.imageToLoad)
 
@@ -257,6 +264,7 @@ class MessageAdapter(
                     )
                     Glide.with(context)
                         .load(imageUrl)
+                        .apply(options)
                         .transform(RoundedCorners(16))
                         .into(imageHolder)
                     imageHolder.setOnClickListener {
@@ -410,7 +418,6 @@ class MessageAdapter(
                     msg.attachedFilename.contains(".doc") -> "doc"
                     else -> "*"
                 }
-                Log.d("TAGTAGTAG", "${msg.attachedFilename} ${msg.attachedDocUrl}")
                 downloader.downloadFile(
                     uri = msg.attachedImageUrl!!,
                     fileName = msg.attachedFilename,

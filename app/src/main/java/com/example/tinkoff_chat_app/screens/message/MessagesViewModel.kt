@@ -14,6 +14,7 @@ import com.example.tinkoff_chat_app.utils.RealTimeEvents.LAST_EVENT_ID_KEY
 import com.example.tinkoff_chat_app.utils.Resource
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -150,6 +151,7 @@ class MessagesViewModel @Inject constructor(
                     queue[LAST_EVENT_ID_KEY] = newEventId
                 } catch (_: Exception) {
                 }
+                delay(500L)
             }
         } catch (_: Exception) {
         }

@@ -60,6 +60,7 @@ dependencies {
 
     implementation deps.androidx.navigation.fragment
     implementation deps.androidx.navigation.ui
+    implementation deps.androidx.swiperefreshlayout
 
     implementation deps.kotlin.coroutines
 

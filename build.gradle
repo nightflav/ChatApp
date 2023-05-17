@@ -16,24 +16,25 @@ buildscript {
                         'coroutines': "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
                 ],
                 'androidx' : [
-                        'navigation'      : [
+                        'navigation'        : [
                                 'fragment': "androidx.navigation:navigation-fragment-ktx:${versions.navigation}",
                                 'ui'      : "androidx.navigation:navigation-ui-ktx:${versions.navigation}"
                         ],
-                        'core'            : 'androidx.core:core-ktx:1.10.0',
-                        'appСompat'       : 'androidx.appcompat:appcompat:1.6.1',
-                        'activity'        : 'androidx.activity:activity-ktx:1.7.1',
-                        'room'            : [
+                        'core'              : 'androidx.core:core-ktx:1.10.0',
+                        'appСompat'         : 'androidx.appcompat:appcompat:1.6.1',
+                        'activity'          : 'androidx.activity:activity-ktx:1.7.1',
+                        'room'              : [
                                 'runtime' : "androidx.room:room-runtime:${versions.room}",
                                 'compiler': "androidx.room:room-compiler:${versions.room}",
                                 'ktx'     : "androidx.room:room-ktx:${versions.room}"
                         ],
-                        'constraintLayout': 'androidx.constraintlayout:constraintlayout:2.1.4',
-                        'datastore'       : 'androidx.datastore:datastore-preferences:1.0.0',
-                        'test'            : 'androidx.arch.core:core-testing:2.2.0',
-                        'junit'           : 'androidx.test.ext:junit:1.1.5',
-                        'runner'          : 'androidx.test:runner:1.5.2',
-                        'orchestrator'    : 'androidx.test:orchestrator:1.4.2'
+                        'constraintLayout'  : 'androidx.constraintlayout:constraintlayout:2.1.4',
+                        'datastore'         : 'androidx.datastore:datastore-preferences:1.0.0',
+                        'test'              : 'androidx.arch.core:core-testing:2.2.0',
+                        'junit'             : 'androidx.test.ext:junit:1.1.5',
+                        'runner'            : 'androidx.test:runner:1.5.2',
+                        'orchestrator'      : 'androidx.test:orchestrator:1.4.2',
+                        'swiperefreshlayout': 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
                 ],
                 'retrofit2': [
                         'retrofit'         : "com.squareup.retrofit2:retrofit:${versions.retrofit}",

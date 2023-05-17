@@ -181,25 +181,29 @@ class SubscribeForMessagesUseCase @Inject constructor(
         val result = mutableListOf<MessageModel>()
         for (msg in this) {
             if (msg.msg.containsLink()) {
-                val links = msg.msg.extractLinks()
-                for (probableLink in links) {
-                    if (probableLink.isImageLink()) {
-                        result.add(
-                            msg.copy(
-                                containsImage = true,
-                                attachedImageUrl = probableLink,
-                                attachedFilename = probableLink.extractFilename()
+                try {
+                    val links = msg.msg.extractLinks()
+                    for (probableLink in links) {
+                        if (probableLink.isImageLink()) {
+                            result.add(
+                                msg.copy(
+                                    containsImage = true,
+                                    attachedImageUrl = probableLink,
+                                    attachedFilename = probableLink.extractFilename()
+                                )
                             )
-                        )
-                    } else if (probableLink.isDocsLink()) {
-                        result.add(
-                            msg.copy(
-                                containsDoc = true,
-                                attachedDocUrl = probableLink,
-                                attachedFilename = probableLink.extractFilename()
+                        } else if (probableLink.isDocsLink()) {
+                            result.add(
+                                msg.copy(
+                                    containsDoc = true,
+                                    attachedDocUrl = probableLink,
+                                    attachedFilename = probableLink.extractFilename()
+                                )
                             )
-                        )
-                    } else result.add(msg)
+                        } else result.add(msg)
+                    }
+                } catch (_: Exception) {
+
                 }
             } else result.add(msg)
         }
