@@ -315,6 +315,7 @@ class MessagesFragment : Fragment() {
 
     private fun setSendButtonOnClickListener() {
         binding.btnSend.setOnClickListener {
+            if (isNetworkAvailable(context))
             if (binding.etMessage.text!!.isNotEmpty()) {
                 val topic = binding.etTopicSelector.text.toString().lowercase()
                 if (!nowEditing)
@@ -349,6 +350,8 @@ class MessagesFragment : Fragment() {
                 binding.etMessage.text!!.clear()
             } else {
                 showSelectFileDialog()
+            } else {
+                makeErrorToast("No internet connection!")
             }
         }
     }
