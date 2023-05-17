@@ -1,9 +1,9 @@
 package com.example.tinkoff_chat_app.domain.repository.profile_repository
 
 import android.content.SharedPreferences
+import com.example.tinkoff_chat_app.models.network_models.users.Member
 import com.example.tinkoff_chat_app.models.ui_models.UserProfile
 import com.example.tinkoff_chat_app.network.ChatApi
-import com.example.tinkoff_chat_app.models.network_models.users.Member
 import com.example.tinkoff_chat_app.screens.profile.ProfileScreenState
 import com.example.tinkoff_chat_app.utils.LocalData.SP_PROFILE_FULLNAME
 import com.example.tinkoff_chat_app.utils.LocalData.SP_PROFILE_ID
@@ -19,7 +19,17 @@ class ProfileRepositoryImpl @Inject constructor(
     private val spProfile: SharedPreferences
 ) : ProfileRepository {
 
-    private var profile: UserProfile? = null
+    private var profile: UserProfile? = UserProfile(
+        fullName = spProfile.getString(SP_PROFILE_FULLNAME, "unknown")!!,
+        id = spProfile.getInt(SP_PROFILE_ID, -1),
+        status = spProfile.getString(SP_PROFILE_STATUS, "offline")
+    )
+        get() {
+            return if (field?.fullName == "unknown")
+                null
+            else
+                field
+        }
 
     override suspend fun getProfile(): UserProfile {
         if (profile == null) {

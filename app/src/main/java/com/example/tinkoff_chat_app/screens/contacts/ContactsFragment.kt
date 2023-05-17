@@ -1,7 +1,6 @@
 package com.example.tinkoff_chat_app.screens.contacts
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.tinkoff_chat_app.R
 import com.example.tinkoff_chat_app.databinding.FragmentContactsBinding
 import com.example.tinkoff_chat_app.di.ViewModelFactory
 import com.example.tinkoff_chat_app.utils.getAppComponent
@@ -81,14 +81,13 @@ class ContactsFragment : Fragment() {
     }
 
     private fun render(state: ContactsScreenUiState) {
-        Log.d("TAGTAGTAG", "$state")
         when {
              state.error != null -> {
                 binding.apply {
                     tvErrorStreams.isVisible = true
                     shimmerContacts.isVisible = false
                     rvContacts.isVisible = false
-                    tvErrorStreams.text = state.error.message
+                    tvErrorStreams.text = getString(R.string.no_internet)
                 }
             }
             state.isLoading -> {

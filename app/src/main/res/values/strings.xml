@@ -45,4 +45,5 @@
     <string name="image">Image</string>
     <string name="docs">Docs</string>
     <string name="tap_to_download">Tap to download</string>
+    <string name="no_internet">Internet connection lost!</string>
 </resources>

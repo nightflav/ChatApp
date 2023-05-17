@@ -22,6 +22,7 @@ import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.Stream
 import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.StreamScreenItem
 import com.example.tinkoff_chat_app.models.ui_models.stream_screen_models.TopicModel
 import com.example.tinkoff_chat_app.utils.getAppComponent
+import com.example.tinkoff_chat_app.utils.isNetworkAvailable
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -228,21 +229,25 @@ class StreamFragment : Fragment() {
                     && createNewStreamDialog!!.dialog!!.isShowing
                     && !createNewStreamDialog!!.isRemoving)
         ) {
-            createNewStreamDialog =
-                StreamCreateDialog.newInstance { streamName, streamDisc, announce ->
-                    lifecycleScope.launch {
-                        viewModel.streamChannel.send(
-                            StreamIntents.CreateNewStreamIntent(
-                                name = streamName.take(60),
-                                description = streamDisc,
-                                announce = announce
-                            ) {
-                                showErrorToast("Failed to create new stream.")
-                            }
-                        )
+            if (isNetworkAvailable(context)) {
+                createNewStreamDialog =
+                    StreamCreateDialog.newInstance { streamName, streamDisc, announce ->
+                        lifecycleScope.launch {
+                            viewModel.streamChannel.send(
+                                StreamIntents.CreateNewStreamIntent(
+                                    name = streamName.take(60),
+                                    description = streamDisc,
+                                    announce = announce
+                                ) {
+                                    showErrorToast("Failed to create new stream.")
+                                }
+                            )
+                        }
                     }
-                }
-            createNewStreamDialog!!.show(childFragmentManager, "stream_dialog")
+                createNewStreamDialog!!.show(childFragmentManager, "stream_dialog")
+            } else {
+                showErrorToast("No internet connection!")
+            }
         }
     }
 
