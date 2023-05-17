@@ -390,7 +390,7 @@ class MessagesFragment : Fragment() {
                     MessagesIntents.UploadFileIntent(
                         file = bytes!!,
                         fileName = file.name,
-                        topic = binding.etTopicSelector.text.toString()
+                        topic = binding.etTopicSelector.text.toString().ifEmpty { topicName ?: "stream events" }
                     ) {
                         makeErrorToast(it)
                     }
