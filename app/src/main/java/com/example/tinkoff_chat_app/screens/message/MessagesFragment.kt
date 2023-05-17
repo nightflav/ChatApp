@@ -316,41 +316,41 @@ class MessagesFragment : Fragment() {
     private fun setSendButtonOnClickListener() {
         binding.btnSend.setOnClickListener {
             if (isNetworkAvailable(context))
-            if (binding.etMessage.text!!.isNotEmpty()) {
-                val topic = binding.etTopicSelector.text.toString().lowercase()
-                if (!nowEditing)
-                    if (topic.isBlank() && topicName == null)
-                        makeErrorToast("Input topic name!")
-                    else
+                if (binding.etMessage.text!!.isNotEmpty()) {
+                    val topic = binding.etTopicSelector.text.toString().lowercase()
+                    if (!nowEditing)
+                        if (topic.isBlank() && topicName == null)
+                            makeErrorToast("Input topic name!")
+                        else
+                            lifecycleScope.launch {
+                                viewModel.messagesChannel.send(
+                                    MessagesIntents.SendMessageIntent(
+                                        content = binding.etMessage.text.toString(),
+                                        topic = topicName?.lowercase()
+                                            ?: binding.etTopicSelector.text.toString()
+                                    ) {
+                                        makeErrorToast("An error occurred sending message.")
+                                    }
+                                )
+                            }
+                    else {
                         lifecycleScope.launch {
                             viewModel.messagesChannel.send(
-                                MessagesIntents.SendMessageIntent(
-                                    content = binding.etMessage.text.toString(),
-                                    topic = topicName?.lowercase()
-                                        ?: binding.etTopicSelector.text.toString()
-                                ) {
-                                    makeErrorToast("An error occurred sending message.")
+                                MessagesIntents.EditMessageIntent(
+                                    newMessageContent = binding.etMessage.text.toString(),
+                                    msgId = binding.etMessage.tag as Int
+                                ) { message ->
+                                    makeErrorToast(message)
                                 }
                             )
                         }
-                else {
-                    lifecycleScope.launch {
-                        viewModel.messagesChannel.send(
-                            MessagesIntents.EditMessageIntent(
-                                newMessageContent = binding.etMessage.text.toString(),
-                                msgId = binding.etMessage.tag as Int
-                            ) { message ->
-                                makeErrorToast(message)
-                            }
-                        )
+                        nowEditing = false
+                        binding.etMessage.tag = Any()
                     }
-                    nowEditing = false
-                    binding.etMessage.tag = Any()
-                }
-                binding.etMessage.text!!.clear()
-            } else {
-                showSelectFileDialog()
-            } else {
+                    binding.etMessage.text!!.clear()
+                } else {
+                    showSelectFileDialog()
+                } else {
                 makeErrorToast("No internet connection!")
             }
         }
@@ -390,7 +390,8 @@ class MessagesFragment : Fragment() {
                     MessagesIntents.UploadFileIntent(
                         file = bytes!!,
                         fileName = file.name,
-                        topic = binding.etTopicSelector.text.toString().ifEmpty { topicName ?: "stream events" }
+                        topic = binding.etTopicSelector.text.toString()
+                            .ifEmpty { topicName ?: "stream events" }
                     ) {
                         makeErrorToast(it)
                     }
